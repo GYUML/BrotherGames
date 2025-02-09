@@ -31,13 +31,13 @@ namespace GameAUI
                 for (int j = 0; j < columnSize; j++)
                     gameBoard[i, j] = Random.Range(1, 10);
 
-            SetBoard(rowSize, columnSize, gameBoard);
+            SetBoard(gameBoard);
         }
 
-        public void SetBoard(int rowSize, int columnSize, int[,] gameBoard)
+        public void SetBoard(int[,] gameBoard)
         {
-            this.rowSize = rowSize;
-            this.columnSize = columnSize;
+            this.rowSize = gameBoard.GetLength(0);
+            this.columnSize = gameBoard.GetLength(1);
 
             foreach (var item in itemPool)
                 item.gameObject.SetActive(false);

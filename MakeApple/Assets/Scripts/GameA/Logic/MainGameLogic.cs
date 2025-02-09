@@ -1,32 +1,30 @@
+using System;
 using UnityEngine;
 
 namespace GameALogic
 {
-    public class GameAMainLogic : MonoBehaviour
+    public class MainGameLogic : MonoBehaviour
     {
-        public int rowSize;
-        public int columnSize;
-
         int[,] gameBoard;
+        Action<int[,]> onUpdateGameBoard;
+
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard)
+        {
+            this.onUpdateGameBoard = onUpdateGameBoard;
+        }
 
         public void GenerateGameBoard(int rowSize, int columnSize)
         {
             gameBoard = new int[rowSize, columnSize];
 
             for (int i = 0; i < rowSize; i++)
-            {
                 for (int j = 0; j < columnSize; j++)
-                {
-                    gameBoard[i, j] = Random.Range(1, 10);
-                }
-            }
+                    gameBoard[i, j] = UnityEngine.Random.Range(1, 10);
 
-            // TODO
-            // UpdateUI
-            // ShowBoard();
+            onUpdateGameBoard?.Invoke(gameBoard);
         }
 
-        void DragEnd(Vector2Int startPoint, Vector2Int endPoint)
+        public void DragEnd(Vector2Int startPoint, Vector2Int endPoint)
         {
             if (IsSuccess(startPoint, endPoint))
             {
@@ -37,11 +35,7 @@ namespace GameALogic
                     for (int j = minPoint.y; j <= maxPoint.y; j++)
                         gameBoard[i, j] = 0;
 
-                // TODO
-                // Update UI
-                //for (int i = minPoint.x; i <= maxPoint.x; i++)
-                //    for (int j = minPoint.y; j <= maxPoint.y; j++)
-                //        RemoveItemInBoard(i, j);
+                onUpdateGameBoard?.Invoke(gameBoard);
             }
         }
 
