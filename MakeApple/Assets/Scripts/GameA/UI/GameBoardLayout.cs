@@ -1,3 +1,4 @@
+using GameA;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,7 @@ namespace GameAUI
         int rowSize;
         int columnSize;
         Vector2Int startPoint;
+        Vector2Int endPoint;
 
         private void Start()
         {
@@ -110,8 +112,8 @@ namespace GameAUI
             }
             else
             {
-                // TODO
-                // DragEnd(startPoint, new Vector2Int(row, column));
+                Debug.Log($"OnItemPointerUp() startPoint={startPoint}, endPoint={endPoint}");
+                Managers.mainLogic.DragEnd(startPoint, endPoint);
             }
 
             startPoint = new Vector2Int(-1, -1);
@@ -123,7 +125,8 @@ namespace GameAUI
             if (startPoint.x < 0 || startPoint.y < 0)
                 return;
 
-            SelectItems(startPoint, new Vector2Int(row, column));
+            endPoint = new Vector2Int(row, column);
+            SelectItems(startPoint, endPoint);
         }
     }
 }
