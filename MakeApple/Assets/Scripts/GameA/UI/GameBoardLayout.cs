@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,10 +6,10 @@ namespace GameAUI
 {
     public class GameBoardLayout : MonoBehaviour
     {
-        public GameObject itemPrefab;
+        public GameBoardItem itemPrefab;
         public Button startButton;
 
-        List<GameObject> itemPool = new List<GameObject>();
+        List<GameBoardItem> itemPool = new List<GameBoardItem>();
 
         int rowSize;
         int columnSize;
@@ -18,7 +17,21 @@ namespace GameAUI
 
         private void Start()
         {
-            itemPrefab.SetActive(false);
+            itemPrefab.gameObject.SetActive(false);
+        }
+
+        void TestCode()
+        {
+            rowSize = 10;
+            columnSize = 7;
+
+            var gameBoard = new int[rowSize, columnSize];
+
+            for (int i = 0; i < rowSize; i++)
+                for (int j = 0; j < columnSize; j++)
+                    gameBoard[i, j] = Random.Range(1, 10);
+
+            SetBoard(rowSize, columnSize, gameBoard);
         }
 
         public void SetBoard(int rowSize, int columnSize, int[,] gameBoard)
@@ -27,13 +40,13 @@ namespace GameAUI
             this.columnSize = columnSize;
 
             foreach (var item in itemPool)
-                item.SetActive(false);
+                item.gameObject.SetActive(false);
 
             for (int i = itemPool.Count; i < rowSize * columnSize; i++)
             {
                 var instantiated = Instantiate(itemPrefab, itemPrefab.transform.parent);
                 itemPool.Add(instantiated);
-                instantiated.SetActive(false);
+                instantiated.gameObject.SetActive(false);
             }
 
             var boardCounter = 0;
@@ -46,32 +59,71 @@ namespace GameAUI
                     var item = itemPool[boardCounter++];
                     var rowIndex = i;
                     var columnIndex = j;
-                    item.SetActive(true);
-                    item.transform.Find("Text").GetComponent<TMP_Text>().text = gameBoard[i, j].ToString();
-                    item.GetComponent<Button>().onClick.RemoveAllListeners();
-                    item.GetComponent<Button>().onClick.AddListener(() => OnSelectItem(rowIndex, columnIndex));
+                    item.gameObject.SetActive(true);
+                    item.SetNumber(gameBoard[i, j]);
+                    item.SetEvent(() => OnItemPointerDown(rowIndex, columnIndex), () => OnItemPointerUp(rowIndex, columnIndex), () => OnItemPointerEnter(rowIndex, columnIndex));
                 }
             }
         }
 
-        public void RemoveItemInBoard(int row, int column)
+        public void RemoveItem(int row, int column)
         {
             var item = itemPool[row * columnSize + column];
-            item.transform.Find("Text").GetComponent<TMP_Text>().text = string.Empty;
+            item.SetNumber(0);
         }
 
-        void OnSelectItem(int row, int column)
+        void SelectItem(int row, int column, bool select)
         {
-            if (startPoint.x > -1 && startPoint.y > -1)
+            var item = itemPool[row * columnSize + column];
+            item.Selected(select);
+        }
+
+        void SelectItems(Vector2Int start, Vector2Int end)
+        {
+            UnSelectAllItems();
+
+            var minPoint = new Vector2Int(Mathf.Min(start.x, end.x), Mathf.Min(start.y, end.y));
+            var maxPoint = new Vector2Int(Mathf.Max(start.x, end.x), Mathf.Max(start.y, end.y));
+
+            for (int i = minPoint.x; i <= maxPoint.x; i++)
+                for (int j = minPoint.y; j <= maxPoint.y; j++)
+                    SelectItem(i, j, true);
+        }
+
+        void UnSelectAllItems()
+        {
+            foreach (var item in itemPool)
+                item.Selected(false);
+        }
+
+        void OnItemPointerDown(int row, int column)
+        {
+            startPoint = new Vector2Int(row, column);
+            SelectItem(row, column, true);
+        }
+
+        void OnItemPointerUp(int row, int column)
+        {
+            if (startPoint.x < 0 || startPoint.y < 0)
             {
-                // TODO
-                // DragEnd(startPoint, new Vector2Int(row, column));
-                startPoint = new Vector2Int(-1, -1);
+                Debug.LogError($"OnItemPointerUp() row={row}, col={column}");
             }
             else
             {
-                startPoint = new Vector2Int(row, column);
+                // TODO
+                // DragEnd(startPoint, new Vector2Int(row, column));
             }
+
+            startPoint = new Vector2Int(-1, -1);
+            UnSelectAllItems();
+        }
+
+        void OnItemPointerEnter(int row, int column)
+        {
+            if (startPoint.x < 0 || startPoint.y < 0)
+                return;
+
+            SelectItems(startPoint, new Vector2Int(row, column));
         }
     }
 }
