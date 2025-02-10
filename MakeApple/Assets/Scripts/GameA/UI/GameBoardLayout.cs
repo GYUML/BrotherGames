@@ -1,6 +1,7 @@
 using GameA;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +10,8 @@ namespace GameAUI
     public class GameBoardLayout : UILayout
     {
         public GameBoardItem itemPrefab;
-        public Button startButton;
         public GuageBar timerGuage;
+        public TMP_Text scoreText;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
 
@@ -67,6 +68,11 @@ namespace GameAUI
             if (timerCo != null)
                 StopCoroutine(timerCo);
             StartCoroutine(TimerCo());
+        }
+
+        public void SetScore(int score)
+        {
+            scoreText.text = score.ToString();
         }
 
         void SelectItem(int row, int column, bool select)
