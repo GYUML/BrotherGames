@@ -6,4 +6,9 @@ public static class KExtension
     {
         return number.ToString("#,##0");
     }
+
+    public static string ToFormat(this int number)
+    {
+        return number.ToString("#,##0");
+    }
 }
