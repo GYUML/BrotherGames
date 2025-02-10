@@ -124,7 +124,7 @@ namespace GameAUI
             }
             else
             {
-                Managers.MainLogic.DragEnd(startPoint, endPoint);
+                Managers.Event.DragEnd(startPoint, endPoint);
             }
 
             startPoint = new Vector2Int(-1, -1);

@@ -60,7 +60,7 @@ namespace GameALogic
         }
 
 
-        int GetPossibleCase()
+        public int GetPossibleCase()
         {
             int res = 0;
             int rowMax = gameBoard.GetLength(0), colMax = gameBoard.GetLength(1);

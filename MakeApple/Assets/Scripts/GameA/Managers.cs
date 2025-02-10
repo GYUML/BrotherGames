@@ -1,6 +1,5 @@
 using UnityEngine;
 using GameALogic;
-using GameAUI;
 
 namespace GameA
 {
@@ -10,24 +9,14 @@ namespace GameA
 
         public MainGameLogic mainGameLogic;
         public UIManager ui;
+        public EventController eventController;
 
         public static MainGameLogic MainLogic { get { return Instance?.mainGameLogic; } }
-        public static UIManager UI {  get { return Instance?.ui; } }
-
+        public static UIManager UI { get { return Instance?.ui; } }
+        public static EventController Event { get { return Instance?.eventController; } } 
         private void Awake()
         {
             Instance = this;
         }
-
-        private void Start()
-        {
-            var rowSize = 10;
-            var colSize = 7;
-
-            mainGameLogic.SetGameBoardCallBack((gameBoard) => ui.GetLayout<GameBoardLayout>().SetBoard(gameBoard));
-            mainGameLogic.GenerateGameBoard(rowSize, colSize);
-            ui.GetLayout<GameBoardLayout>().StartTimer(60f);
-        }
     }
 }
-
