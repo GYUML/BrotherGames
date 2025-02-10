@@ -39,7 +39,7 @@ namespace GameALogic
 
                 onUpdateGameBoard?.Invoke(gameBoard);
             }
-            Debug.Log(PossibleCase());
+            Debug.Log(GetPossibleCase());
         }
 
         bool IsSuccess(Vector2Int startPoint, Vector2Int endPoint)
@@ -60,7 +60,7 @@ namespace GameALogic
         }
 
 
-        int PossibleCase()
+        int GetPossibleCase()
         {
             int res = 0;
             int rowMax = gameBoard.GetLength(0), colMax = gameBoard.GetLength(1);
