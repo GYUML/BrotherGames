@@ -1,4 +1,5 @@
 using GameA;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ namespace GameAUI
     {
         public GameBoardItem itemPrefab;
         public Button startButton;
+        public GuageBar timerGuage;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
 
@@ -16,6 +18,10 @@ namespace GameAUI
         int columnSize;
         Vector2Int startPoint;
         Vector2Int endPoint;
+
+        float nowRemainTime;
+        float maxRemainTime;
+        Coroutine timerCo;
 
         private void Start()
         {
@@ -54,10 +60,13 @@ namespace GameAUI
             }
         }
 
-        public void RemoveItem(int row, int column)
+        public void StartTimer(float remainSeconds)
         {
-            var item = itemPool[row * columnSize + column];
-            item.SetNumber(0);
+            maxRemainTime = remainSeconds;
+
+            if (timerCo != null)
+                StopCoroutine(timerCo);
+            StartCoroutine(TimerCo());
         }
 
         void SelectItem(int row, int column, bool select)
@@ -82,6 +91,17 @@ namespace GameAUI
         {
             foreach (var item in itemPool)
                 item.Selected(false);
+        }
+
+        IEnumerator TimerCo()
+        {
+            nowRemainTime = maxRemainTime;
+            while (nowRemainTime > 0)
+            {
+                timerGuage.SetGuage(maxRemainTime, nowRemainTime);
+                yield return null;
+                nowRemainTime -= Time.deltaTime;
+            }
         }
 
         void OnItemPointerDown(int row, int column)

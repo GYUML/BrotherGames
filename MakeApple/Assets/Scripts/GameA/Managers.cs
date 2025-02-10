@@ -26,6 +26,7 @@ namespace GameA
 
             mainGameLogic.SetGameBoardCallBack((gameBoard) => ui.GetLayout<GameBoardLayout>().SetBoard(gameBoard));
             mainGameLogic.GenerateGameBoard(rowSize, colSize);
+            ui.GetLayout<GameBoardLayout>().StartTimer(60f);
         }
     }
 }
