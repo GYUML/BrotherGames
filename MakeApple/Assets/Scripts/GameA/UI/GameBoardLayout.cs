@@ -1,14 +1,17 @@
 using GameA;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace GameAUI
 {
-    public class GameBoardLayout : MonoBehaviour
+    public class GameBoardLayout : UILayout
     {
         public GameBoardItem itemPrefab;
-        public Button startButton;
+        public GuageBar timerGuage;
+        public TMP_Text scoreText;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
 
@@ -17,23 +20,13 @@ namespace GameAUI
         Vector2Int startPoint;
         Vector2Int endPoint;
 
+        float nowRemainTime;
+        float maxRemainTime;
+        Coroutine timerCo;
+
         private void Start()
         {
             itemPrefab.gameObject.SetActive(false);
-        }
-
-        void TestCode()
-        {
-            rowSize = 10;
-            columnSize = 7;
-
-            var gameBoard = new int[rowSize, columnSize];
-
-            for (int i = 0; i < rowSize; i++)
-                for (int j = 0; j < columnSize; j++)
-                    gameBoard[i, j] = Random.Range(1, 10);
-
-            SetBoard(gameBoard);
         }
 
         public void SetBoard(int[,] gameBoard)
@@ -68,10 +61,18 @@ namespace GameAUI
             }
         }
 
-        public void RemoveItem(int row, int column)
+        public void StartTimer(float remainSeconds)
         {
-            var item = itemPool[row * columnSize + column];
-            item.SetNumber(0);
+            maxRemainTime = remainSeconds;
+
+            if (timerCo != null)
+                StopCoroutine(timerCo);
+            StartCoroutine(TimerCo());
+        }
+
+        public void SetScore(int score)
+        {
+            scoreText.text = score.ToString();
         }
 
         void SelectItem(int row, int column, bool select)
@@ -98,6 +99,17 @@ namespace GameAUI
                 item.Selected(false);
         }
 
+        IEnumerator TimerCo()
+        {
+            nowRemainTime = maxRemainTime;
+            while (nowRemainTime > 0)
+            {
+                timerGuage.SetGuage(maxRemainTime, nowRemainTime);
+                yield return null;
+                nowRemainTime -= Time.deltaTime;
+            }
+        }
+
         void OnItemPointerDown(int row, int column)
         {
             startPoint = new Vector2Int(row, column);
@@ -112,8 +124,7 @@ namespace GameAUI
             }
             else
             {
-                Debug.Log($"OnItemPointerUp() startPoint={startPoint}, endPoint={endPoint}");
-                Managers.mainLogic.DragEnd(startPoint, endPoint);
+                Managers.MainLogic.DragEnd(startPoint, endPoint);
             }
 
             startPoint = new Vector2Int(-1, -1);

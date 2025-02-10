@@ -8,10 +8,11 @@ namespace GameA
     {
         public static Managers Instance;
 
-        public GameBoardLayout gameBoardLayout;
         public MainGameLogic mainGameLogic;
+        public UIManager ui;
 
-        public static MainGameLogic mainLogic { get { return Instance?.mainGameLogic; } }
+        public static MainGameLogic MainLogic { get { return Instance?.mainGameLogic; } }
+        public static UIManager UI {  get { return Instance?.ui; } }
 
         private void Awake()
         {
@@ -23,8 +24,9 @@ namespace GameA
             var rowSize = 10;
             var colSize = 7;
 
-            mainGameLogic.SetGameBoardCallBack((gameBoard) => gameBoardLayout.SetBoard(gameBoard));
+            mainGameLogic.SetGameBoardCallBack((gameBoard) => ui.GetLayout<GameBoardLayout>().SetBoard(gameBoard));
             mainGameLogic.GenerateGameBoard(rowSize, colSize);
+            ui.GetLayout<GameBoardLayout>().StartTimer(60f);
         }
     }
 }
