@@ -10,17 +10,39 @@ namespace GameALogic
     {
         Action<int[,]> onUpdateGameBoard;
         Action<int> onUpdateScore;
+        Action<float> onUpdateTimer;
+
+        int rowSize;
+        int columnSize;
 
         int[,] gameBoard;
         int score=0;
+        float remainSeconds;
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore)
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onUpdateTimer)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
+            this.onUpdateTimer = onUpdateTimer;
         }
 
-        public void GenerateGameBoard(int rowSize, int columnSize)
+        public void StartGame(int rowSize, int columnSize)
+        {
+            this.rowSize = rowSize;
+            this.columnSize = columnSize;
+
+            ResetScore();
+            GenerateGameBoard(rowSize, columnSize);
+            SetRemainTime(120f);
+        }
+
+        void NextStage()
+        {
+            GenerateGameBoard(rowSize, columnSize);
+            SetRemainTime(120f);
+        }
+
+        void GenerateGameBoard(int rowSize, int columnSize)
         {
             gameBoard = new int[rowSize, columnSize];
 
@@ -43,14 +65,15 @@ namespace GameALogic
                         if (gameBoard[i, j] != 0)
                         {
                             gameBoard[i, j] = 0;
-                            score++;
+                            AddScore(1);
                         }
 
                 onUpdateGameBoard?.Invoke(gameBoard);
-                onUpdateScore?.Invoke(score);
+                Debug.Log($"Possible : {GetPossibleCase()}");
+
+                if (GetPossibleCase() <= 0)
+                    NextStage();
             }
-            Debug.Log(GetPossibleCase());
-            Debug.Log(score);
         }
 
         bool IsSuccess(Vector2Int startPoint, Vector2Int endPoint)
@@ -177,6 +200,24 @@ namespace GameALogic
             }
 
             return res;
+        }
+
+        void AddScore(int add)
+        {
+            score += add;
+            onUpdateScore?.Invoke(score);
+        }
+
+        void ResetScore()
+        {
+            score = 0;
+            onUpdateScore?.Invoke(score);
+        }
+
+        void SetRemainTime(float seconds)
+        {
+            remainSeconds = seconds;
+            onUpdateTimer?.Invoke(remainSeconds);
         }
     }
 }
