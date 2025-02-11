@@ -8,12 +8,16 @@ namespace GameALogic
 {
     public class MainGameLogic : MonoBehaviour
     {
-        int[,] gameBoard;
         Action<int[,]> onUpdateGameBoard;
+        Action<int> onUpdateScore;
+
+        int[,] gameBoard;
         int score=0;
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard)
+
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
+            this.onUpdateScore = onUpdateScore;
         }
 
         public void GenerateGameBoard(int rowSize, int columnSize)
@@ -43,6 +47,7 @@ namespace GameALogic
                         }
 
                 onUpdateGameBoard?.Invoke(gameBoard);
+                onUpdateScore?.Invoke(score);
             }
             Debug.Log(GetPossibleCase());
             Debug.Log(score);

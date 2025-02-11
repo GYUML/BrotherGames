@@ -7,7 +7,9 @@ namespace GameA
     {
         private void Start()
         {
-            Managers.MainLogic.SetGameBoardCallBack((gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard));
+            Managers.MainLogic.SetGameBoardCallBack(
+                (gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard),
+                (score) => Managers.UI.GetLayout<GameBoardLayout>().SetScore(score));
 
             GenerateNewGame();
         }
