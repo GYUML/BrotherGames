@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameALogic
@@ -9,7 +10,7 @@ namespace GameALogic
     {
         int[,] gameBoard;
         Action<int[,]> onUpdateGameBoard;
-
+        int score=0;
         public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
@@ -35,11 +36,16 @@ namespace GameALogic
 
                 for (int i = minPoint.x; i <= maxPoint.x; i++)
                     for (int j = minPoint.y; j <= maxPoint.y; j++)
-                        gameBoard[i, j] = 0;
+                        if (gameBoard[i, j] != 0)
+                        {
+                            gameBoard[i, j] = 0;
+                            score++;
+                        }
 
                 onUpdateGameBoard?.Invoke(gameBoard);
             }
             Debug.Log(GetPossibleCase());
+            Debug.Log(score);
         }
 
         bool IsSuccess(Vector2Int startPoint, Vector2Int endPoint)
@@ -60,49 +66,105 @@ namespace GameALogic
         }
 
 
+        //        public int GetPossibleCase()
+        //        {
+        //            int res = 0;
+        //            int rowMax = gameBoard.GetLength(0), colMax = gameBoard.GetLength(1);
+
+        //            /*시작점이 되는 좌표*/
+        //            for (int i = 0; i < rowMax; i++)
+        //            {
+        //                for(int j = 0; j < colMax; j++)
+        //                {
+
+        //                    int[] arr = new int[colMax - j];
+        //                    bool flag1, flag2, flag3, flag4;
+
+        //                    /*끝점이 되는 좌표*/
+        //                    for (int k = i; k < rowMax; k++)
+        //                    {
+        //                        for (int l = j; l < colMax; l++)
+        //                        {
+        //                            if (k == i) arr[l - j] = gameBoard[k, l] + (l == j ? 0 : arr[l - j - 1]);   //영역의 첫째줄은 누적합으로 배열에 저장
+        //                            else
+        //                            {
+        //                                //if (l - j + 1 < arr.Length) arr[l - j + 1] -= arr[l - j];   //중첩된 부분 제거
+
+        //                                if (l == j) arr[l - j] += gameBoard[k, l];
+        //                                else arr[l - j] = arr[l - j - 1] + arr[l - j] + gameBoard[k, l];
+        //                            }
+
+        //                            if (arr[l - j] == 10)
+        //                            {
+        //                                res++;
+        //                                //k = rowMax;     //이중 for문 탈출
+        //                                break;          //이중 for문 탈출
+        //                            }
+        //                            else if (arr[l - j] > 10)
+        //                            {
+        //                                if (l == j) k = rowMax;
+        //                                break;
+        //                            }
+        //                        }
+        //                        for (int l = colMax - j - 1; l > 0; l--)
+        //                        {
+        //                            arr[l] -= arr[l - 1];
+        //                        }
+        //                    }
+
+
+        //                }
+        //            }
+
+        //            return res;
+        //        }
+        //    }
+        //}
+
         public int GetPossibleCase()
         {
             int res = 0;
             int rowMax = gameBoard.GetLength(0), colMax = gameBoard.GetLength(1);
 
             /*시작점이 되는 좌표*/
-            for (int i = 0; i < rowMax; i++)
+            for (int P0_row = 0; P0_row < rowMax; P0_row++)
             {
-                for(int j = 0; j < colMax; j++)
+                for (int P0_col = 0; P0_col < colMax; P0_col++)
                 {
 
-                    int[] arr = new int[colMax - j];
+                    int[,] arr = new int[rowMax - P0_row, colMax - P0_col];
+                    bool flag1, flag2, flag3, flag4;
 
                     /*끝점이 되는 좌표*/
-                    for (int k = i; k < rowMax; k++)
+                    for (int P1_row = P0_row; P1_row < rowMax; P1_row++)
                     {
-                        for (int l = j; l < colMax; l++)
+                        for (int P1_col = P0_col; P1_col < colMax; P1_col++)
                         {
-                            if (k == i) arr[l - j] = gameBoard[k, l] + (l == j ? 0 : arr[l - j - 1]);   //영역의 첫째줄은 누적합으로 배열에 저장
+                            int x = P1_row - P0_row, y = P1_col - P0_col;   //임의 영역의 좌표
+                            if (x == 0) arr[0, y] = gameBoard[P1_row, P1_col] + (P1_col == P0_col ? 0 : arr[0, y - 1]);   //영역의 첫째줄은 누적합으로 배열에 저장
                             else
                             {
                                 //if (l - j + 1 < arr.Length) arr[l - j + 1] -= arr[l - j];   //중첩된 부분 제거
-
-                                if (l == j) arr[l - j] += gameBoard[k, l];
-                                else arr[l - j] = arr[l - j - 1] + arr[l - j] + gameBoard[k, l];
+                                if (y == 0) arr[x, y] = gameBoard[P1_row, P1_col] + arr[x - 1, y];
+                                else arr[x, y] = gameBoard[P1_row, P1_col] + arr[x - 1, y] + arr[x, y - 1] - arr[x - 1, y - 1];
                             }
 
-                            if (arr[l - j] == 10)
+                            if (arr[x, y] == 10)
                             {
                                 res++;
                                 //k = rowMax;     //이중 for문 탈출
                                 break;          //이중 for문 탈출
                             }
-                            else if (arr[l - j] > 10)
+                            else if (arr[x, y] > 10)
                             {
-                                if (l == j) k = rowMax;
+                                if (y == 0) P1_row = rowMax;
                                 break;
                             }
                         }
-                        for (int l = colMax - j - 1; l > 0; l--)
-                        {
-                            arr[l] -= arr[l - 1];
-                        }
+                        //for (int l = colMax - j - 1; l > 0; l--)
+                        //{
+                        //    arr[l] -= arr[l - 1];
+                        //}
                     }
 
 
