@@ -49,6 +49,19 @@ public class UIManager : MonoBehaviour
         return null;
     }
 
+    public void ShowLayout<T>() where T : UILayout
+    {
+        var layout = GetLayout<T>();
+        layout.gameObject.SetActive(true);
+        layout.transform.SetAsLastSibling();
+    }
+
+    public void HideAllLayout()
+    {
+        foreach (var layout in uiLayouts)
+            layout.gameObject.SetActive(false);
+    }
+
     public T GetPopup<T>() where T : UIPopup
     {
         foreach (var popup in uiPopups)
