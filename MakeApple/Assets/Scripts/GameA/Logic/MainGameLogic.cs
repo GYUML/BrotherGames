@@ -10,20 +10,35 @@ namespace GameALogic
     {
         Action<int[,]> onUpdateGameBoard;
         Action<int> onUpdateScore;
-        Action<float> onUpdateTimer;
+        Action<float> onSetTimer;
+        Action<int> onTimeOver;
 
         int rowSize;
         int columnSize;
 
         int[,] gameBoard;
-        int score=0;
+        int score = 0;
         float remainSeconds;
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onUpdateTimer)
+        private void Update()
+        {
+            if (remainSeconds > 0)
+            {
+                remainSeconds -= Time.deltaTime;
+                if (remainSeconds <= 0)
+                {
+                    onTimeOver?.Invoke(score);
+                    Debug.Log("End Game");
+                }
+            }
+        }
+
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onSetTimer, Action<int> onTimeOver)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
-            this.onUpdateTimer = onUpdateTimer;
+            this.onSetTimer = onSetTimer;
+            this.onTimeOver = onTimeOver;
         }
 
         public void StartGame(int rowSize, int columnSize)
@@ -161,7 +176,7 @@ namespace GameALogic
         void SetRemainTime(float seconds)
         {
             remainSeconds = seconds;
-            onUpdateTimer?.Invoke(remainSeconds);
+            onSetTimer?.Invoke(remainSeconds);
         }
     }
 }

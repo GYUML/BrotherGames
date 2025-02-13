@@ -11,11 +11,17 @@ public class GameResultPopup : UIPopup
 
     private void Start()
     {
-        homeButton.onClick.AddListener(() => Managers.Event.MovePage(EventController.Page.Lobby));
+        homeButton.onClick.AddListener(OnClickHome);
     }
 
     public void SetScore(long score)
     {
         scoreText.text = score.ToFormat();
+    }
+
+    void OnClickHome()
+    {
+        Managers.Event.MovePage(EventController.Page.Lobby);
+        Managers.UI.HidePopup<GameResultPopup>();
     }
 }

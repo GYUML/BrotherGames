@@ -16,7 +16,8 @@ namespace GameA
             Managers.MainLogic.SetGameBoardCallBack(
                 (gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard),
                 (score) => Managers.UI.GetLayout<GameBoardLayout>().SetScore(score),
-                (time) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(time));
+                (time) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(time),
+                (score) => Managers.UI.ShowPopup<GameResultPopup>().SetScore(score));
 
             MovePage(Page.Lobby);
         }
