@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 6238522877863713271}
   - component: {fileID: 1679177914230406602}
   m_Layer: 5
-  m_Name: Score
+  m_Name: ScoreText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -281,6 +281,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6513753758821977086}
+  - component: {fileID: 5353822573820793010}
   m_Layer: 5
   m_Name: GameResultPopup
   m_TagString: Untagged
@@ -311,6 +312,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5353822573820793010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5254340357951825104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f24c3eb88f0cd847ad2b4a3d41d974e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreText: {fileID: 1679177914230406602}
+  homeButton: {fileID: 1149667267238903554}
 --- !u!1 &6150843166308470810
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +414,7 @@ GameObject:
   - component: {fileID: 9172558621637946412}
   - component: {fileID: 1149667267238903554}
   m_Layer: 5
-  m_Name: Button
+  m_Name: HomeButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -67,7 +67,7 @@ namespace GameAUI
 
             if (timerCo != null)
                 StopCoroutine(timerCo);
-            StartCoroutine(TimerCo());
+            timerCo = StartCoroutine(TimerCo());
         }
 
         public void SetScore(int score)
