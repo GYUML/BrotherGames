@@ -10,5 +10,6 @@ public class LobbyLayout : UILayout
     private void Start()
     {
         startButton.onClick.AddListener(()=>Managers.Event.MovePage(EventController.Page.MainGame));
+        rankingButton.onClick.AddListener(() => Managers.UI.ShowPopup<RankingPopup>());
     }
 }
