@@ -2,11 +2,13 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace GameAUI
 {
     public class GameBoardItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler
     {
+        public Image icon;
         public TMP_Text numberText;
         public Action onPointerDown;
         public Action onPointerUp;
@@ -36,6 +38,7 @@ namespace GameAUI
 
         public void SetNumber(int number)
         {
+            icon.gameObject.SetActive(number > 0);
             numberText.text = number > 0 ? number.ToString() : string.Empty;
         }
 

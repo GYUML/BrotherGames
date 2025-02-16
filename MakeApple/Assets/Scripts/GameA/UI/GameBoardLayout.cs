@@ -10,8 +10,8 @@ namespace GameAUI
     public class GameBoardLayout : UILayout
     {
         public GameBoardItem itemPrefab;
-        public GuageBar timerGuage;
         public TMP_Text scoreText;
+        public RectTransform timeGuage;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
 
@@ -104,7 +104,7 @@ namespace GameAUI
             nowRemainTime = maxRemainTime;
             while (nowRemainTime > 0)
             {
-                timerGuage.SetGuage(maxRemainTime, nowRemainTime);
+                timeGuage.localScale = new Vector2(nowRemainTime / maxRemainTime, 1f);
                 yield return null;
                 nowRemainTime -= Time.deltaTime;
             }
