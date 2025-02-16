@@ -17,7 +17,7 @@ namespace GameA
                 (gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard),
                 (score) => Managers.UI.GetLayout<GameBoardLayout>().SetScore(score),
                 (time) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(time),
-                (score) => Managers.UI.ShowPopup<GameResultPopup>().SetScore(score),
+                OnEndGame,
                 (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column));
 
             MovePage(Page.Lobby);
@@ -48,6 +48,24 @@ namespace GameA
                 Managers.UI.ShowLayout<GameBoardLayout>();
                 StartGame();
             }
+        }
+
+        void OnEndGame(int score)
+        {
+            Managers.UI.ShowPopup<LoadingPopup>();
+            Managers.Web.SetMyRanking(
+                (data) =>
+                {
+                    Managers.UI.HidePopup<LoadingPopup>();
+                    Managers.UI.ShowPopup<GameResultPopup>().SetScore(score);
+                },
+                () =>
+                {
+                    Managers.UI.HidePopup<LoadingPopup>();
+                    Managers.UI.ShowPopup<MessagePopup>().Set("Error", "Failed to register score.");
+                    Managers.Event.MovePage(Page.Lobby);
+                },
+                "Test1234", score);
         }
     }
 }

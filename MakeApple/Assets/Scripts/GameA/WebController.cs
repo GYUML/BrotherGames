@@ -11,7 +11,7 @@ public class WebController : MonoBehaviour
     readonly string CacheDirectoryPath = "CacheData";
     readonly string CacheFileName = "WebCache.json";
 
-    readonly string SetMyRankingUrl = "";
+    readonly string SetMyRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/addmessage";
     readonly string GetRankingUrl = "";
 
     List<WebCache> cachingList = new List<WebCache>();
@@ -22,20 +22,20 @@ public class WebController : MonoBehaviour
             cachingList = data;
     }
 
-    public void SetMyRanking(Action<string> onComplete, string uid, int score)
+    public void SetMyRanking(Action<string> onSuccess, Action onFailed, string uid, int score)
     {
-        var url = $"{SetMyRankingUrl}?{uid}&{score}";
-        RequestGet(SetMyRankingUrl, onComplete);
+        var url = $"{SetMyRankingUrl}?uid={uid}&score={score}";
+        RequestGet(url, onSuccess, onFailed);
     }
 
-    public void GetRankingList(Action<string> onComplete)
+    public void GetRankingList(Action<string> onComplete, Action onFailed)
     {
-        RequestGet(GetRankingUrl, onComplete);
+        RequestGet(GetRankingUrl, onComplete, onFailed);
     }
 
-    void RequestGet(string url, Action<string> onComplete, bool needCaching = false)
+    void RequestGet(string url, Action<string> onComplete, Action onFailed, bool needCaching = false)
     {
-        StartCoroutine(RequestGetCo(url, onComplete));
+        StartCoroutine(RequestGetCo(url, onComplete, onFailed));
     }
 
     void SaveCacheData(string url, string data)
@@ -54,14 +54,17 @@ public class WebController : MonoBehaviour
         Managers.File.SaveData(CacheDirectoryPath, CacheFileName, cachingList);
     }
 
-    IEnumerator RequestGetCo(string url, Action<string> onComplete, bool needCaching = false)
+    IEnumerator RequestGetCo(string url, Action<string> onComplete, Action onFailed, bool needCaching = false)
     {
+        Debug.Log($"[WebController] RequestGetCo(). url={url}");
+
         var www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
 
         if (www.result != UnityWebRequest.Result.Success)
         {
             Debug.Log(www.error);
+            onFailed?.Invoke();
         }
         else
         {
