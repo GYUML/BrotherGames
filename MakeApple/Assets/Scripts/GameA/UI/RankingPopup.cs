@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class RankingPopup : UIPopup
 {
-    public Button homeButton;
+    public KButton homeButton;
     public TMP_Text scoreItemPrefab;
 
     List<TMP_Text> scoreItemPool = new List<TMP_Text>();

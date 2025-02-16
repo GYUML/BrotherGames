@@ -1316,6 +1316,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameBoardLayout
       objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3987992165025129150, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6975431292308483039, guid: d24e25c5158d28948bb7599c13e9e815, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

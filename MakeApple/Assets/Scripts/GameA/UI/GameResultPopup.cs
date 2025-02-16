@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class GameResultPopup : UIPopup
 {
     public TMP_Text scoreText;
-    public Button homeButton;
+    public KButton homeButton;
 
     private void Start()
     {

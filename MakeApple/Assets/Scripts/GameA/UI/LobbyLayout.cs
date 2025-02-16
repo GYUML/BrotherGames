@@ -4,8 +4,8 @@ using UnityEngine.UI;
 
 public class LobbyLayout : UILayout
 {
-    public Button startButton;
-    public Button rankingButton;
+    public KButton startButton;
+    public KButton rankingButton;
 
     private void Start()
     {
