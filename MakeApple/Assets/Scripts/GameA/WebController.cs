@@ -12,7 +12,7 @@ public class WebController : MonoBehaviour
     readonly string CacheFileName = "WebCache.json";
 
     readonly string SetMyRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/addmessage";
-    readonly string GetRankingUrl = "";
+    readonly string GetRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/getRankings";
 
     List<WebCache> cachingList = new List<WebCache>();
 
@@ -69,10 +69,9 @@ public class WebController : MonoBehaviour
         else
         {
             Debug.Log(www.downloadHandler.text);
-            var data = www.downloadHandler.data;
-            onComplete?.Invoke(data.ToString());
+            onComplete?.Invoke(www.downloadHandler.text);
             if (needCaching)
-                SaveCacheData(url, data.ToString());
+                SaveCacheData(url, www.downloadHandler.text);
         }
     }
 

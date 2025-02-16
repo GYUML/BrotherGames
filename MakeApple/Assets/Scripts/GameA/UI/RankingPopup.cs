@@ -9,32 +9,38 @@ using UnityEngine.UI;
 public class RankingPopup : UIPopup
 {
     public KButton homeButton;
-    public TMP_Text scoreItemPrefab;
+    public RankingPopupItem rankItemPrefab;
 
-    List<TMP_Text> scoreItemPool = new List<TMP_Text>();
+    List<RankingPopupItem> rankItemPool = new List<RankingPopupItem>();
 
     private void Start()
     {
-        scoreItemPrefab.gameObject.SetActive(false);
+        rankItemPrefab.gameObject.SetActive(false);
         homeButton.onClick.AddListener(() => Managers.UI.HidePopup<RankingPopup>());
     }
 
-    public void Set(List<Tuple<string, int>> rankings)
+    public void Set(List<RankingData> rankings)
     {
-        for (int i = scoreItemPool.Count; i < rankings.Count; i++)
+        for (int i = rankItemPool.Count; i < rankings.Count; i++)
         {
-            var scoreItem = Instantiate(scoreItemPrefab, scoreItemPrefab.transform.parent);
-            scoreItemPool.Add(scoreItem);
+            var rankItem = Instantiate(rankItemPrefab, rankItemPrefab.transform.parent);
+            rankItemPool.Add(rankItem);
         }
 
         for (int i = 0; i < rankings.Count; i++)
         {
-            var ranking = rankings[i];
-            var scoreItem = scoreItemPool[i];
-            scoreItem.text = $"{i + 1}. {ranking.Item1} {ranking.Item2.ToFormat()}";
+            var rankingData = rankings[i];
+            var rankItem = rankItemPool[i];
+            rankItem.Set(i + 1, rankingData.name, rankingData.score);
         }
 
-        for (int i = rankings.Count; i < scoreItemPool.Count; i++)
-            scoreItemPool[i].gameObject.SetActive(false);
+        for (int i = rankings.Count; i < rankItemPool.Count; i++)
+            rankItemPool[i].gameObject.SetActive(false);
+    }
+
+    public class RankingData
+    {
+        public string name;
+        public int score;
     }
 }
