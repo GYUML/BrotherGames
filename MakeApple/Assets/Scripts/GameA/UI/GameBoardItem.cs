@@ -9,10 +9,16 @@ namespace GameAUI
     public class GameBoardItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler
     {
         public Image icon;
+        public Image selected;
         public TMP_Text numberText;
         public Action onPointerDown;
         public Action onPointerUp;
         public Action onPointerEnter;
+
+        private void Start()
+        {
+            Selected(false);
+        }
 
         public void OnPointerDown(PointerEventData eventData)
         {
@@ -45,6 +51,7 @@ namespace GameAUI
         public void Selected(bool selected)
         {
             transform.localScale = selected ? Vector3.one * 0.8f : Vector3.one;
+            this.selected.gameObject.SetActive(selected);
         }
     }
 }
