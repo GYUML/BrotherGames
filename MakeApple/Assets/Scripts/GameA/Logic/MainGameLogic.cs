@@ -12,6 +12,7 @@ namespace GameALogic
         Action<int> onUpdateScore;
         Action<float> onSetTimer;
         Action<int> onTimeOver;
+        Action<int, int> onAcquire;
 
         int rowSize;
         int columnSize;
@@ -33,12 +34,13 @@ namespace GameALogic
             }
         }
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onSetTimer, Action<int> onTimeOver)
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
             this.onSetTimer = onSetTimer;
             this.onTimeOver = onTimeOver;
+            this.onAcquire = onAcquire;
         }
 
         public void StartGame(int rowSize, int columnSize)
@@ -81,6 +83,7 @@ namespace GameALogic
                         {
                             gameBoard[i, j] = 0;
                             AddScore(1);
+                            onAcquire?.Invoke(i, j);
                         }
 
                 onUpdateGameBoard?.Invoke(gameBoard);

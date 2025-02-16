@@ -17,7 +17,8 @@ namespace GameA
                 (gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard),
                 (score) => Managers.UI.GetLayout<GameBoardLayout>().SetScore(score),
                 (time) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(time),
-                (score) => Managers.UI.ShowPopup<GameResultPopup>().SetScore(score));
+                (score) => Managers.UI.ShowPopup<GameResultPopup>().SetScore(score),
+                (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column));
 
             MovePage(Page.Lobby);
             Application.targetFrameRate = 60;
