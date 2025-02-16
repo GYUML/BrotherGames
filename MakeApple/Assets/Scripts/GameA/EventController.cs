@@ -20,6 +20,7 @@ namespace GameA
                 (score) => Managers.UI.ShowPopup<GameResultPopup>().SetScore(score));
 
             MovePage(Page.Lobby);
+            Application.targetFrameRate = 60;
         }
 
         public void StartGame()
