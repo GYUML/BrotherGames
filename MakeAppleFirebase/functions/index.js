@@ -8,20 +8,20 @@
  */
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
-const {logger} = require("firebase-functions");
+// const {logger} = require("firebase-functions");
 const {onRequest} = require("firebase-functions/v2/https");
-const {
-  onDocumentWritten,
-  onDocumentCreated,
-  onDocumentUpdated,
-  onDocumentDeleted,
-  Change,
-  FirestoreEvent
-} = require("firebase-functions/v2/firestore");
+// const {
+//   onDocumentWritten,
+//   onDocumentCreated,
+//   onDocumentUpdated,
+//   onDocumentDeleted,
+//   Change,
+//   FirestoreEvent
+// } = require("firebase-functions/v2/firestore");
 
 // The Firebase Admin SDK to access Firestore.
 const {initializeApp} = require("firebase-admin/app");
-const {getFirestore, Timestamp} = require("firebase-admin/firestore");
+const {getFirestore} = require("firebase-admin/firestore");
 
 initializeApp();
 
@@ -29,7 +29,7 @@ initializeApp();
 //  Take the text parameter passed to this HTTP endpoint and insert it into
 //  Firestore under the path /messages/:documentId/original
 exports.addmessage = onRequest(async (req, res) => {
-  try{
+  try {
     // Grab the text parameter.
     const uid = req.query.uid;
     const score = Number(req.query.score);
@@ -37,31 +37,28 @@ exports.addmessage = onRequest(async (req, res) => {
     const db = getFirestore();
     const userRef = db.collection("Ranking").doc(uid);
     let isBest = false;
-    
     const userData = await userRef.get();
-    let today = new Date();
-    
+    const today = new Date();
     if (!userData.exists) {
       isBest = true;
-    }
-    else{
-      if(userData.data().bestScore < score) isBest = true;
+    } else {
+      if (userData.data().bestScore < score) isBest = true;
     }
 
-    if(isBest == true){
+    if (isBest == true) {
       await userRef.set({
         bestScore: score,
-        today: today
+        today: today,
       }, {merge: true});
     }
 
     res.json({
       result: {
-        score : score,
-        isBest : isBest
-      }
+        score: score,
+        isBest: isBest,
+      },
     });
-  } catch(error){
+  } catch (error) {
     console.log(error);
   }
 });
@@ -71,22 +68,20 @@ exports.getRankings = onRequest(async (req, res) => {
   try {
     const db = getFirestore();
     const snapshot = await db.collection("Ranking")
-      .orderBy("score", "desc")
-      .limit(10)
-      .get();
+        .orderBy("bestScore", "desc")
+        .limit(3)
+        .get();
 
 
-    let topUsers = [];
+    const topUsers = [];
     snapshot.forEach((doc) => {
       topUsers.push({
-        name : doc.id,
-        score : doc.data().score
+        name: doc.id,
+        score: doc.data().bestScore,
       });
     });
-
     res.json(topUsers);
-
-  } catch(error) {
+  } catch (error) {
     console.log(error);
   }
 
