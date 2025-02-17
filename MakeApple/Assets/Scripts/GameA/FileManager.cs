@@ -8,18 +8,19 @@ public class FileManager : MonoBehaviour
 {
     Dictionary<Type, string> lastSaveData = new Dictionary<Type, string>();
 
-    public void SaveData<T>(string directoryPath, string fileName, T targetObject)
+    public bool SaveData<T>(string directoryPath, string fileName, T targetObject)
     {
         var objectType = targetObject.GetType();
         var fullPath = $"{Application.persistentDataPath}/{directoryPath}/{fileName}";
         var objectJson = JsonConvert.SerializeObject(targetObject);
+        var saveSuccess = false;
 
         if (lastSaveData.ContainsKey(objectType))
         {
             if (lastSaveData[objectType].Equals(objectJson))
             {
                 Debug.Log("SaveData() Same data saved already");
-                return;
+                return true;
             }
         }
 
@@ -29,11 +30,14 @@ public class FileManager : MonoBehaviour
         {
             Directory.CreateDirectory($"{Application.persistentDataPath}/{directoryPath}");
             File.WriteAllText(fullPath, objectJson);
+            saveSuccess = true;
         }
         catch (Exception ex)
         {
             Debug.LogException(ex);
         }
+
+        return saveSuccess;
     }
 
     public bool TryLoadData<T>(string filePath, out T loadObject)
