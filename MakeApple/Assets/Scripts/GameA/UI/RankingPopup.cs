@@ -31,6 +31,7 @@ public class RankingPopup : UIPopup
         {
             var rankingData = rankings[i];
             var rankItem = rankItemPool[i];
+            rankItem.gameObject.SetActive(true);
             rankItem.Set(i + 1, rankingData.name, rankingData.score);
         }
 

@@ -65,7 +65,7 @@ namespace GameA
                     Managers.UI.ShowPopup<MessagePopup>().Set("Error", "Failed to register score.");
                     Managers.Event.MovePage(Page.Lobby);
                 },
-                "Test1234", score);
+                Managers.UserData.GetUserUID(), score);
         }
     }
 }
