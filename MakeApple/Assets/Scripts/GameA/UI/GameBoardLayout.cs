@@ -24,8 +24,6 @@ namespace GameAUI
         Vector2Int startPoint;
         Vector2Int endPoint;
 
-        float nowRemainTime;
-        float maxRemainTime;
         Coroutine timerCo;
 
         private void Start()
@@ -66,13 +64,11 @@ namespace GameAUI
             }
         }
 
-        public void StartTimer(float remainSeconds)
+        public void StartTimer(float maxRemainTime, float nowRemainTime)
         {
-            maxRemainTime = remainSeconds;
-
             if (timerCo != null)
                 StopCoroutine(timerCo);
-            timerCo = StartCoroutine(TimerCo());
+            timerCo = StartCoroutine(TimerCo(maxRemainTime, nowRemainTime));
         }
 
         public void SetScore(int score)
@@ -130,14 +126,15 @@ namespace GameAUI
                 item.Selected(false);
         }
 
-        IEnumerator TimerCo()
+        IEnumerator TimerCo(float maxRemainTime, float nowRemainTime)
         {
-            nowRemainTime = maxRemainTime;
-            while (nowRemainTime > 0)
+            var timer = nowRemainTime;
+
+            while (timer > 0)
             {
-                timeGuage.localScale = new Vector2(nowRemainTime / maxRemainTime, 1f);
+                timeGuage.localScale = new Vector2(timer / maxRemainTime, 1f);
                 yield return null;
-                nowRemainTime -= Time.deltaTime;
+                timer -= Time.deltaTime;
             }
         }
 

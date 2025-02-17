@@ -16,7 +16,7 @@ namespace GameA
             Managers.MainLogic.SetGameBoardCallBack(
                 (gameBoard) => Managers.UI.GetLayout<GameBoardLayout>().SetBoard(gameBoard),
                 (score) => Managers.UI.GetLayout<GameBoardLayout>().SetScore(score),
-                (time) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(time),
+                (maxTime, nowTime) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(maxTime, nowTime),
                 OnEndGame,
                 (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column));
 

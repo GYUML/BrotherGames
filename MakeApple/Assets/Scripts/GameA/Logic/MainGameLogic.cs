@@ -10,12 +10,13 @@ namespace GameALogic
     {
         Action<int[,]> onUpdateGameBoard;
         Action<int> onUpdateScore;
-        Action<float> onSetTimer;
+        Action<float, float> onSetTimer;
         Action<int> onTimeOver;
         Action<int, int> onAcquire;
 
         int rowSize;
         int columnSize;
+        float maxRemainSeconds;
 
         int[,] gameBoard;
         int score = 0;
@@ -34,7 +35,7 @@ namespace GameALogic
             }
         }
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float, float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
@@ -50,13 +51,13 @@ namespace GameALogic
 
             ResetScore();
             GenerateGameBoard(rowSize, columnSize);
-            SetRemainTime(120f);
+            SetRemainTime(100f, 100f);
         }
 
         void NextStage()
         {
             GenerateGameBoard(rowSize, columnSize);
-            SetRemainTime(120f);
+            SetRemainTime(120f, Mathf.Min(maxRemainSeconds, remainSeconds + 50f));
         }
 
         void GenerateGameBoard(int rowSize, int columnSize)
@@ -176,10 +177,11 @@ namespace GameALogic
             onUpdateScore?.Invoke(score);
         }
 
-        void SetRemainTime(float seconds)
+        void SetRemainTime(float maxTime, float nowTime)
         {
-            remainSeconds = seconds;
-            onSetTimer?.Invoke(remainSeconds);
+            maxRemainSeconds = maxTime;
+            remainSeconds = nowTime;
+            onSetTimer?.Invoke(maxTime, nowTime);
         }
     }
 }
