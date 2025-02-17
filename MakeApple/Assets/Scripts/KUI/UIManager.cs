@@ -29,12 +29,7 @@ public class UIManager : MonoBehaviour
         });
 
         RegisterAllLayoutsAndPopups();
-    }
-
-    private void Start()
-    {
-        foreach (var popup in uiPopups)
-            popup.Hide();
+        HideAllPopup();
     }
 
     public T GetLayout<T>() where T : UILayout
@@ -121,5 +116,11 @@ public class UIManager : MonoBehaviour
 
         foreach (var popup in popups)
             uiPopups.Add(popup);
+    }
+
+    void HideAllPopup()
+    {
+        foreach (var popup in uiPopups)
+            popup.Hide();
     }
 }
