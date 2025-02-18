@@ -28,7 +28,7 @@ initializeApp();
 
 //  Take the text parameter passed to this HTTP endpoint and insert it into
 //  Firestore under the path /messages/:documentId/original
-exports.addmessage = onRequest(async (req, res) => {
+exports.saveScore = onRequest(async (req, res) => {
   try {
     // Grab the text parameter.
     const uid = req.query.uid;
@@ -80,6 +80,35 @@ exports.getRankings = onRequest(async (req, res) => {
         score: doc.data().bestScore,
       });
     });
+    res.json(topUsers);
+  } catch (error) {
+    console.log(error);
+  }
+
+  return null;
+});
+
+
+exports.getTopRanking = onRequest(async (req, res) => {
+  try {
+    const db = getFirestore();
+    const topUserRef = db.collection("TopRanking").doc("topUsers");
+    const snapshot = await db.collection("Ranking")
+        .orderBy("bestScore", "desc")
+        .limit(3)
+        .get();
+
+    const topUsers = [];
+    snapshot.forEach((doc) => {
+      topUsers.push({
+        name: doc.id,
+        score: doc.data().bestScore,
+      });
+    });
+
+    await topUserRef.set({
+      topUsers
+    }, {merge: true});
     res.json(topUsers);
   } catch (error) {
     console.log(error);
