@@ -15,15 +15,15 @@ public class UIManager : MonoBehaviour
     public RectTransform layoutParent;
     public RectTransform popupParent;
 
-    DimensionsChangeCallback canvasChangeCallback;
+    RectSizeListener rectSizeListener;
 
     private void Awake()
     {
         UIUtil.ApplySafeAreaAnchor(ref safeArea);
         UIUtil.ApplyPreserveRatio(safeArea, 0.75f);
 
-        canvasChangeCallback = canvas.GetComponent<DimensionsChangeCallback>();
-        canvasChangeCallback.SetDimensionsChangeCallback(() =>
+        rectSizeListener = canvas.GetComponent<RectSizeListener>();
+        rectSizeListener.AddSizeChangeCallback(() =>
         {
             UIUtil.ApplySafeAreaAnchor(ref safeArea);
         });
@@ -103,7 +103,7 @@ public class UIManager : MonoBehaviour
 
     public void AddCanvasChangeCallback(Action onChange)
     {
-        canvasChangeCallback.SetDimensionsChangeCallback(onChange);
+        rectSizeListener.AddSizeChangeCallback(onChange);
     }
 
     void RegisterAllLayoutsAndPopups()
