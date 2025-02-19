@@ -25,6 +25,7 @@ const {getFirestore} = require("firebase-admin/firestore");
 
 initializeApp();
 
+const NumberOfTop = 3;
 
 //  Take the text parameter passed to this HTTP endpoint and insert it into
 //  Firestore under the path /messages/:documentId/original
@@ -50,6 +51,7 @@ exports.saveScore = onRequest(async (req, res) => {
         bestScore: score,
         today: today,
       }, {merge: true});
+      await checkRanking(uid, score);
     }
 
     res.json({
@@ -69,7 +71,7 @@ exports.getRankings = onRequest(async (req, res) => {
     const db = getFirestore();
     const snapshot = await db.collection("Ranking")
         .orderBy("bestScore", "desc")
-        .limit(3)
+        .limit(NumberOfTop)
         .get();
 
 
@@ -95,7 +97,7 @@ exports.getTopRanking = onRequest(async (req, res) => {
     const topUserRef = db.collection("TopRanking").doc("topUsers");
     const snapshot = await db.collection("Ranking")
         .orderBy("bestScore", "desc")
-        .limit(3)
+        .limit(NumberOfTop)
         .get();
 
     const topUsers = [];
@@ -116,3 +118,40 @@ exports.getTopRanking = onRequest(async (req, res) => {
 
   return null;
 });
+
+
+async function checkRanking(uid, score){
+  const db = getFirestore();
+  const topUserRef = db.collection("TopRanking").doc("topUsers");
+  const topUsers = await topUserRef.get();
+  if(topUsers.exists){
+    const arr = topUsers.data().topUsers;
+    const resArr = await updateRanking(arr, uid, score);
+    console.log(resArr);
+    await topUserRef.set({
+      topUsers: resArr
+    }, {merge: true});
+    // 자기가 이미 Top10인데 갱신했다면 기존 Top10에서 자기 이름은 빼야함
+    // 따라서 Top 랭킹 출력은 10명만 하더라도 데이터는 11명 가지고 있어야함.
+    // resArr의 크기 제한은 없으므로 11명으로 제한하는 코드 필요
+  } else{
+    //getTopRanking()  처음에는 topUsers 문서가 없으므로 getTopRanking 실행 필요
+    console.log("topUsers not found");
+  }
+  
+}
+
+
+async function updateRanking(arr, uid, newScore){
+  
+  let i = arr.length;
+  while(0 < i && arr[i - 1].score < newScore){
+    if(arr[i - 1].name == uid) arr.splice(i-1, 1);  // Top10에 이미 ID가 있다면 삭제
+    i--;
+  }
+  arr.splice(i,0,{
+    name: uid,
+    score: newScore
+  });
+  return arr;
+}
