@@ -4,14 +4,14 @@ using UnityEngine;
 public class UnsafeArea : MonoBehaviour
 {
     RectTransform rt;
-    DimensionsChangeCallback dimensionsChangeCallback;
+    RectSizeListener rectSizeListener;
 
     private void Start()
     {
         rt = GetComponent<RectTransform>();
 
-        dimensionsChangeCallback = gameObject.GetOrAddComponent<DimensionsChangeCallback>();
-        dimensionsChangeCallback.SetDimensionsChangeCallback(MakeUnsafeArea);
+        rectSizeListener = gameObject.GetOrAddComponent<RectSizeListener>();
+        rectSizeListener.AddSizeChangeCallback(MakeUnsafeArea);
 
         MakeUnsafeArea();
     }
