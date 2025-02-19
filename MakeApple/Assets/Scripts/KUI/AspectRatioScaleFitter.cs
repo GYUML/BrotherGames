@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[ExecuteAlways]
 public class AspectRatioScaleFitter : MonoBehaviour
 {
     Rect rect
@@ -14,11 +13,17 @@ public class AspectRatioScaleFitter : MonoBehaviour
     }
 
     RectTransform mRectTransform;
-    Rect prevParentRect;
 
-    private void Update()
+    void OnRectTransformDimensionsChange()
     {
         UpdateLayout();
+    }
+
+    private void OnDrawGizmos()
+    {
+#if UNITY_EDITOR
+        UpdateLayout();
+#endif
     }
 
     void UpdateLayout()
@@ -28,11 +33,6 @@ public class AspectRatioScaleFitter : MonoBehaviour
 
         if (parentRectTransform == null)
             return;
-
-        if (prevParentRect != null && prevParentRect == parentRect)
-            return;
-
-        prevParentRect = parentRect;
 
         if (rect.width == 0 || transform.localScale.x == 0
             || rect.height == 0 || transform.localScale.y == 0)
