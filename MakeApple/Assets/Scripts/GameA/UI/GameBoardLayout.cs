@@ -15,6 +15,7 @@ namespace GameAUI
         public TMP_Text scoreText;
         public RectTransform timeGuage;
         public RectTransform acquireEffect;
+        public GameObject timerIcon;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
         Stack<RectTransform> effectPool = new Stack<RectTransform>();
@@ -129,10 +130,23 @@ namespace GameAUI
         IEnumerator TimerCo(float maxRemainTime, float nowRemainTime)
         {
             var timer = nowRemainTime;
+            var startedShakeTimeIcon = false;
 
             while (timer > 0)
             {
                 timeGuage.localScale = new Vector2(timer / maxRemainTime, 1f);
+                if (!startedShakeTimeIcon && timer < 10f)
+                {
+                    startedShakeTimeIcon = true;
+                    var sequence = DOTween.Sequence();
+                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, -45f), 0.1f));
+                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 45f), 0.2f));
+                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 0f), 0.1f));
+                    sequence.Insert(0f, timerIcon.transform.DOScale(Vector3.one * 1.3f, 0.2f));
+                    sequence.Insert(0.2f, timerIcon.transform.DOScale(Vector3.one, 0.2f));
+                    sequence.AppendInterval(0.6f);
+                    sequence.SetLoops(-1);
+                }
                 yield return null;
                 timer -= Time.deltaTime;
             }

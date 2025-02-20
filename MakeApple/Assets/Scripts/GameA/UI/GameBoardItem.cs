@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using TMPro;
 using UnityEngine;
@@ -52,6 +53,14 @@ namespace GameAUI
         {
             transform.localScale = selected ? Vector3.one * 0.8f : Vector3.one;
             this.selected.gameObject.SetActive(selected);
+
+            if (selected)
+            {
+                var sequence = DOTween.Sequence();
+                sequence.Append(this.selected.transform.DOScale(new Vector3(0.9f, 1.1f, 1f), 0.2f).SetEase(Ease.OutBack));
+                sequence.Append(this.selected.transform.DOScale(new Vector3(1.1f, 0.9f, 1f), 0.2f).SetEase(Ease.OutBack));
+                sequence.Append(this.selected.transform.DOScale(new Vector3(1f, 1f, 1f), 0.2f).SetEase(Ease.OutBack));
+            }
         }
     }
 }
