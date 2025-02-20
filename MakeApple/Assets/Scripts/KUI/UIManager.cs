@@ -15,21 +15,26 @@ public class UIManager : MonoBehaviour
     public RectTransform layoutParent;
     public RectTransform popupParent;
 
+    public bool safeTop;
+    public bool safeBottom;
+    public bool safeLeft;
+    public bool safeRight;
+
+    public float minRatio;
+    public float maxRatio;
+
     RectSizeListener rectSizeListener;
+    CanvasScaler canvasScaler;
 
     private void Awake()
     {
-        UIUtil.ApplySafeAreaAnchor(ref safeArea);
-        UIUtil.ApplyPreserveRatio(safeArea, 0.75f);
-
+        canvasScaler = canvas.GetComponent<CanvasScaler>();
         rectSizeListener = canvas.GetComponent<RectSizeListener>();
-        rectSizeListener.AddSizeChangeCallback(() =>
-        {
-            UIUtil.ApplySafeAreaAnchor(ref safeArea);
-        });
+        rectSizeListener.AddSizeChangeCallback(() => UpdateSafeArea());
 
         RegisterAllLayoutsAndPopups();
         HideAllPopup();
+        UpdateSafeArea();
     }
 
     public T GetLayout<T>() where T : UILayout
@@ -101,11 +106,6 @@ public class UIManager : MonoBehaviour
         Debug.LogError($"[{GetType().Name}] GetPopup(). Can't find popup {typeof(T)}");
     }
 
-    public void AddCanvasChangeCallback(Action onChange)
-    {
-        rectSizeListener.AddSizeChangeCallback(onChange);
-    }
-
     void RegisterAllLayoutsAndPopups()
     {
         var layouts = layoutParent.GetComponentsInChildren<UILayout>(true);
@@ -122,5 +122,11 @@ public class UIManager : MonoBehaviour
     {
         foreach (var popup in uiPopups)
             popup.Hide();
+    }
+
+    void UpdateSafeArea()
+    {
+        UIUtil.ApplySafeAreaAnchor(ref safeArea, safeTop, safeBottom, safeLeft, safeRight);
+        UIUtil.ApplyPreserveRatio(safeArea.rect, canvasScaler, minRatio, maxRatio);
     }
 }

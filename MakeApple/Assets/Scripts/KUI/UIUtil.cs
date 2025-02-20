@@ -1,42 +1,48 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIUtil
 {
-    public static void ApplySafeAreaAnchor(ref RectTransform rt)
+    public static void ApplySafeAreaAnchor(ref RectTransform rt, bool topSafe = false, bool bottomSafe = false, bool leftSafe = false, bool rightSafe = false)
     {
-        Rect safeArea = Screen.safeArea;
+        var safeArea = Screen.safeArea;
+        var topOffset = topSafe ? Screen.height - (safeArea.position.y + safeArea.height) : 0f;
+        var bottomOffset = bottomSafe ? safeArea.position.y : 0f;
+        var leftOffset = leftSafe ? safeArea.position.x : 0f;
+        var rightOffset = rightSafe ? Screen.width - (safeArea.position.x + safeArea.width) : 0f;
+        var scale = 1 / rt.lossyScale.x;
 
-        // Convert safe area rectangle from absolute pixels to normalised anchor coordinates
-        Vector2 anchorMin = safeArea.position;
-        Vector2 anchorMax = safeArea.position + safeArea.size;
-
-        anchorMin.x = rt.anchorMin.x;
-        anchorMax.x = rt.anchorMax.x;
-
-        anchorMin.y = 0f;
-        anchorMax.y /= Screen.height;
-
-        rt.anchorMin = anchorMin;
-        rt.anchorMax = anchorMax;
+        rt.offsetMin = new Vector2(leftOffset, bottomOffset) * scale;
+        rt.offsetMax = new Vector2(-rightOffset, -topOffset) * scale;
     }
 
-    public static void ApplyPreserveRatio(RectTransform rt, float maxRatio)
+    // ratio : width / height
+    public static void ApplyPreserveRatio(Rect rect, CanvasScaler scaler, float minRatio = 0f, float maxRatio = 0f)
     {
-        var nowRatio = rt.rect.width / rt.rect.height;
+        var ratio = rect.width / rect.height;
 
-        if (nowRatio > maxRatio)
+        if (minRatio > 0 && maxRatio > 0)
         {
-            var margin = (nowRatio - maxRatio) / nowRatio / 2f;
-
-            rt.anchorMin = new Vector2(0f + margin, 0f);
-            rt.anchorMax = new Vector2(1f - margin, 1f);
+            if (ratio < minRatio)
+                scaler.matchWidthOrHeight = 0f;
+            else if (maxRatio > 0 && ratio > maxRatio)
+                scaler.matchWidthOrHeight = 1f;
         }
-        else
+        else if (minRatio > 0)
         {
-            rt.anchorMin = new Vector2(0f, rt.anchorMin.y);
-            rt.anchorMax = new Vector2(1f, rt.anchorMax.y);
+            if (ratio < minRatio)
+                scaler.matchWidthOrHeight = 0f;
+            else
+                scaler.matchWidthOrHeight = 1f;
+        }
+        else if (maxRatio > 0)
+        {
+            if (maxRatio > 0 && ratio > maxRatio)
+                scaler.matchWidthOrHeight = 1f;
+            else
+                scaler.matchWidthOrHeight = 0f;
         }
     }
 }

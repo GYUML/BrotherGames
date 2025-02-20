@@ -595,6 +595,12 @@ MonoBehaviour:
   safeArea: {fileID: 1598262835}
   layoutParent: {fileID: 522274401}
   popupParent: {fileID: 1923653044}
+  safeTop: 1
+  safeBottom: 0
+  safeLeft: 0
+  safeRight: 0
+  minRatio: 0.5625
+  maxRatio: 0
 --- !u!1 &1159763449
 GameObject:
   m_ObjectHideFlags: 0
@@ -608,7 +614,6 @@ GameObject:
   - component: {fileID: 1159763451}
   - component: {fileID: 1159763450}
   - component: {fileID: 1159763454}
-  - component: {fileID: 1159763455}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -711,22 +716,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08103b80a2746b143ad8cdb5ab3d46c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1159763455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159763449}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53a23e9bef969214cb7b794232a7bc7a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  scaler: {fileID: 1159763451}
-  ratioMode: 1
-  minRatio: 0.5625
-  maxRatio: 0
 --- !u!1 &1191059313
 GameObject:
   m_ObjectHideFlags: 0
