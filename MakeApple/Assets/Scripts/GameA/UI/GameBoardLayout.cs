@@ -26,11 +26,22 @@ namespace GameAUI
         Vector2Int endPoint;
 
         Coroutine timerCo;
+        Sequence timerIconSequence;
 
         private void Start()
         {
             itemPrefab.gameObject.SetActive(false);
             acquireEffect.gameObject.SetActive(false);
+
+            timerIconSequence = DOTween.Sequence();
+            timerIconSequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, -45f), 0.1f));
+            timerIconSequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 45f), 0.2f));
+            timerIconSequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 0f), 0.1f));
+            timerIconSequence.Insert(0f, timerIcon.transform.DOScale(Vector3.one * 1.3f, 0.2f));
+            timerIconSequence.Insert(0.2f, timerIcon.transform.DOScale(Vector3.one, 0.2f));
+            timerIconSequence.AppendInterval(0.6f);
+            timerIconSequence.SetLoops(-1);
+            timerIconSequence.Pause();
         }
 
         public void SetBoard(int[,] gameBoard)
@@ -70,6 +81,12 @@ namespace GameAUI
             if (timerCo != null)
                 StopCoroutine(timerCo);
             timerCo = StartCoroutine(TimerCo(maxRemainTime, nowRemainTime));
+        }
+
+        public void StopGame()
+        {
+            timerIconSequence.Rewind();
+            UnSelectAllItems();
         }
 
         public void SetScore(int score)
@@ -131,6 +148,7 @@ namespace GameAUI
         {
             var timer = nowRemainTime;
             var startedShakeTimeIcon = false;
+            timerIconSequence.Rewind();
 
             while (timer > 0)
             {
@@ -138,14 +156,7 @@ namespace GameAUI
                 if (!startedShakeTimeIcon && timer < 10f)
                 {
                     startedShakeTimeIcon = true;
-                    var sequence = DOTween.Sequence();
-                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, -45f), 0.1f));
-                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 45f), 0.2f));
-                    sequence.Append(timerIcon.transform.DORotate(new Vector3(0f, 0f, 0f), 0.1f));
-                    sequence.Insert(0f, timerIcon.transform.DOScale(Vector3.one * 1.3f, 0.2f));
-                    sequence.Insert(0.2f, timerIcon.transform.DOScale(Vector3.one, 0.2f));
-                    sequence.AppendInterval(0.6f);
-                    sequence.SetLoops(-1);
+                    timerIconSequence.Restart();
                 }
                 yield return null;
                 timer -= Time.deltaTime;

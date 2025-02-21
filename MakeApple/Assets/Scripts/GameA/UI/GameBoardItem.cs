@@ -16,9 +16,18 @@ namespace GameAUI
         public Action onPointerUp;
         public Action onPointerEnter;
 
+        Sequence selectedTween;
+
         private void Start()
         {
             Selected(false);
+
+            selectedTween = DOTween.Sequence();
+            selectedTween.Append(selected.transform.DOScale(new Vector3(0.9f, 1.1f, 1f), 0.2f).SetEase(Ease.OutBack));
+            selectedTween.Append(selected.transform.DOScale(new Vector3(1.1f, 0.9f, 1f), 0.2f).SetEase(Ease.OutBack));
+            selectedTween.Append(selected.transform.DOScale(new Vector3(1f, 1f, 1f), 0.2f).SetEase(Ease.OutBack));
+            selectedTween.SetAutoKill(false);
+            selectedTween.Rewind();
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -55,12 +64,7 @@ namespace GameAUI
             this.selected.gameObject.SetActive(selected);
 
             if (selected)
-            {
-                var sequence = DOTween.Sequence();
-                sequence.Append(this.selected.transform.DOScale(new Vector3(0.9f, 1.1f, 1f), 0.2f).SetEase(Ease.OutBack));
-                sequence.Append(this.selected.transform.DOScale(new Vector3(1.1f, 0.9f, 1f), 0.2f).SetEase(Ease.OutBack));
-                sequence.Append(this.selected.transform.DOScale(new Vector3(1f, 1f, 1f), 0.2f).SetEase(Ease.OutBack));
-            }
+                selectedTween.Restart();
         }
     }
 }

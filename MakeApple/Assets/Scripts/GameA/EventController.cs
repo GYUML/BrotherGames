@@ -53,6 +53,7 @@ namespace GameA
         void OnEndGame(int score)
         {
             Managers.UI.ShowPopup<LoadingPopup>();
+            Managers.UI.GetLayout<GameBoardLayout>().StopGame();
             Managers.Web.SetMyRanking(
                 (data) =>
                 {
