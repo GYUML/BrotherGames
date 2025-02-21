@@ -1,31 +1,10 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-// The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
-// const {logger} = require("firebase-functions");
 const {onRequest} = require("firebase-functions/v2/https");
-// const {
-//   onDocumentWritten,
-//   onDocumentCreated,
-//   onDocumentUpdated,
-//   onDocumentDeleted,
-//   Change,
-//   FirestoreEvent
-// } = require("firebase-functions/v2/firestore");
-
-// The Firebase Admin SDK to access Firestore.
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore} = require("firebase-admin/firestore");
 
 initializeApp();
 
-const NumberOfTop = 3;
+const NumberOfTop = 100;
 
 //  Take the text parameter passed to this HTTP endpoint and insert it into
 //  Firestore under the path /messages/:documentId/original
@@ -36,7 +15,7 @@ exports.addScore = onRequest(async (req, res) => {
     const score = Number(req.query.score);
 
     const db = getFirestore();
-    const userRef = db.collection("Ranking").doc(uid);
+    const userRef = db.collection("UserInfo").doc(uid);
     const userData = await userRef.get();
     const today = new Date();
     let isBest = false;
@@ -68,24 +47,28 @@ exports.addScore = onRequest(async (req, res) => {
 
 exports.getRankings = onRequest(async (req, res) => {
   const db = getFirestore();
-  const topUserRef = db.collection("TopRanking").doc("topUsers");
+  const topUserRef = db.collection("TopRanking").doc("TopUsers");
   const topUsers = await topUserRef.get();
-  if(topUsers.exists){
+  if (topUsers.exists) {
     const arr = topUsers.data().topUsers;
-    res.json(arr.slice(0, NumberOfTop));  // slice 하지 않는다면 전체 순위가 출력됨
-  } else{
+    res.json(arr.slice(0, NumberOfTop));
+  } else {
     console.log("topUsers not found");
   }
 
   return null;
 });
 
+// forceRanking();
 
-exports.getTopRanking = onRequest(async (req, res) => {
+/**
+ * @async forceRanking
+ */
+async function forceRanking() {
   try {
     const db = getFirestore();
-    const topUserRef = db.collection("TopRanking").doc("topUsers");
-    const snapshot = await db.collection("Ranking")
+    const topUserRef = db.collection("TopRanking").doc("TopUsers");
+    const snapshot = await db.collection("UserInfo")
         .orderBy("bestScore", "desc")
         .limit(NumberOfTop)
         .get();
@@ -99,49 +82,51 @@ exports.getTopRanking = onRequest(async (req, res) => {
     });
 
     await topUserRef.set({
-      topUsers
+      topUsers,
     }, {merge: true});
-    res.json(topUsers);
+    // res.json(topUsers);
   } catch (error) {
     console.log(error);
   }
 
   return null;
-});
-
-
-async function checkRanking(uid, score){
-  const db = getFirestore();
-  const topUserRef = db.collection("TopRanking").doc("topUsers");
-  const topUsers = await topUserRef.get();
-  if(topUsers.exists){
-    const arr = topUsers.data().topUsers;
-    const resArr = await updateRanking(arr, uid, score);
-    console.log(resArr);
-    await topUserRef.set({
-      topUsers: resArr
-    }, {merge: true});
-    // 자기가 이미 Top10인데 갱신했다면 기존 Top10에서 자기 이름은 빼야함
-    // 따라서 Top 랭킹 출력은 10명만 하더라도 데이터는 11명 가지고 있어야함.
-    // resArr의 크기 제한은 없으므로 11명으로 제한하는 코드 필요
-  } else{
-    //getTopRanking()  처음에는 topUsers 문서가 없으므로 getTopRanking 실행 필요
-    console.log("topUsers not found");
-  }
-  
 }
 
 
-async function updateRanking(arr, uid, newScore){
-  
+/**
+ * @param {string} uid
+ * @param {number} score
+ */
+async function checkRanking(uid, score) {
+  const db = getFirestore();
+  const topUserRef = db.collection("TopRanking").doc("TopUsers");
+  const topUsers = await topUserRef.get();
+  if (topUsers.exists) {
+    const arr = topUsers.data().topUsers;
+    const resArr = await sortRanking(arr, uid, score);
+    await topUserRef.set({
+      topUsers: resArr.slice(0, NumberOfTop),
+    }, {merge: true});
+  } else {
+    console.log("topUsers not found");
+  }
+}
+
+
+/**
+ * @param {Array} arr
+ * @param {string} uid
+ * @param {number} newScore
+ */
+async function sortRanking(arr, uid, newScore) {
   let i = arr.length;
-  while(0 < i && arr[i - 1].score < newScore){
-    if(arr[i - 1].name == uid) arr.splice(i-1, 1);  // Top10에 이미 ID가 있다면 삭제
+  while (0 < i && arr[i - 1].score < newScore) {
+    if (arr[i - 1].name == uid) arr.splice(i-1, 1); // Top10에 이미 ID가 있다면 삭제
     i--;
   }
-  arr.splice(i,0,{
+  arr.splice(i, 0, {
     name: uid,
-    score: newScore
+    score: newScore,
   });
   return arr;
 }
