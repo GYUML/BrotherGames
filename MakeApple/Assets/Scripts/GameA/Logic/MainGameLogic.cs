@@ -10,6 +10,7 @@ namespace GameALogic
     {
         Action<int[,]> onUpdateGameBoard;
         Action<int> onUpdateScore;
+        Action<int> onUpdateRemainCount;
         Action<float, float> onSetTimer;
         Action<int> onTimeOver;
         Action<int, int> onAcquire;
@@ -35,10 +36,11 @@ namespace GameALogic
             }
         }
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<float, float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<int> onUpdateRemainCount, Action<float, float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
+            this.onUpdateRemainCount = onUpdateRemainCount;
             this.onSetTimer = onSetTimer;
             this.onTimeOver = onTimeOver;
             this.onAcquire = onAcquire;
@@ -69,6 +71,7 @@ namespace GameALogic
                     gameBoard[i, j] = UnityEngine.Random.Range(1, 10);
 
             onUpdateGameBoard?.Invoke(gameBoard);
+            onUpdateRemainCount?.Invoke(GetPossibleCase());
         }
 
         public void DragEnd(Vector2Int startPoint, Vector2Int endPoint)
@@ -88,6 +91,7 @@ namespace GameALogic
                         }
 
                 onUpdateGameBoard?.Invoke(gameBoard);
+                onUpdateRemainCount?.Invoke(GetPossibleCase());
                 Debug.Log($"Possible : {GetPossibleCase()}");
 
                 if (GetPossibleCase() <= 0)

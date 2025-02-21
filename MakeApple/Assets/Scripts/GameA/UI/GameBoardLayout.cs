@@ -13,6 +13,7 @@ namespace GameAUI
     {
         public GameBoardItem itemPrefab;
         public TMP_Text scoreText;
+        public TMP_Text remainText;
         public RectTransform timeGuage;
         public RectTransform acquireEffect;
         public GameObject timerIcon;
@@ -92,6 +93,11 @@ namespace GameAUI
         public void SetScore(int score)
         {
             scoreText.text = score.ToString();
+        }
+
+        public void SetRemainCount(int remain)
+        {
+            remainText.text = $"Remain : {remain}";
         }
 
         public void ShowAcquireEffect(int row, int column)
