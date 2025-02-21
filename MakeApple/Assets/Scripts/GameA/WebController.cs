@@ -11,8 +11,8 @@ public class WebController : MonoBehaviour
     readonly string CacheDirectoryPath = "CacheData";
     readonly string CacheFileName = "WebCache.json";
 
-    readonly string SetMyRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/addmessage";
-    readonly string GetRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/getRankings";
+    readonly string SetMyRankingUrl = "https://us-central1-makeapple-afe23.cloudfunctions.net/addScore";
+    readonly string GetRankingUrl = "https://getrankings-3hisbdyeeq-uc.a.run.app";
 
     List<WebCache> cachingList = new List<WebCache>();
 
