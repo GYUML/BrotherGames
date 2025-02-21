@@ -29,7 +29,7 @@ const NumberOfTop = 3;
 
 //  Take the text parameter passed to this HTTP endpoint and insert it into
 //  Firestore under the path /messages/:documentId/original
-exports.saveScore = onRequest(async (req, res) => {
+exports.addScore = onRequest(async (req, res) => {
   try {
     // Grab the text parameter.
     const uid = req.query.uid;
@@ -37,9 +37,9 @@ exports.saveScore = onRequest(async (req, res) => {
 
     const db = getFirestore();
     const userRef = db.collection("Ranking").doc(uid);
-    let isBest = false;
     const userData = await userRef.get();
     const today = new Date();
+    let isBest = false;
     if (!userData.exists) {
       isBest = true;
     } else {
@@ -67,24 +67,14 @@ exports.saveScore = onRequest(async (req, res) => {
 
 
 exports.getRankings = onRequest(async (req, res) => {
-  try {
-    const db = getFirestore();
-    const snapshot = await db.collection("Ranking")
-        .orderBy("bestScore", "desc")
-        .limit(NumberOfTop)
-        .get();
-
-
-    const topUsers = [];
-    snapshot.forEach((doc) => {
-      topUsers.push({
-        name: doc.id,
-        score: doc.data().bestScore,
-      });
-    });
-    res.json(topUsers);
-  } catch (error) {
-    console.log(error);
+  const db = getFirestore();
+  const topUserRef = db.collection("TopRanking").doc("topUsers");
+  const topUsers = await topUserRef.get();
+  if(topUsers.exists){
+    const arr = topUsers.data().topUsers;
+    res.json(arr.slice(0, NumberOfTop));  // slice 하지 않는다면 전체 순위가 출력됨
+  } else{
+    console.log("topUsers not found");
   }
 
   return null;
