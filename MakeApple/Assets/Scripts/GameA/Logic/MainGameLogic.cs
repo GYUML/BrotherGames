@@ -22,6 +22,7 @@ namespace GameALogic
         int[,] gameBoard;
         int score = 0;
         float remainSeconds;
+        int nowStage;
 
         private void Update()
         {
@@ -31,7 +32,6 @@ namespace GameALogic
                 if (remainSeconds <= 0)
                 {
                     onTimeOver?.Invoke(score);
-                    Debug.Log("End Game");
                 }
             }
         }
@@ -50,6 +50,7 @@ namespace GameALogic
         {
             this.rowSize = rowSize;
             this.columnSize = columnSize;
+            nowStage = 1;
 
             ResetScore();
             GenerateGameBoard(rowSize, columnSize);
@@ -58,8 +59,9 @@ namespace GameALogic
 
         void NextStage()
         {
+            nowStage++;
             GenerateGameBoard(rowSize, columnSize);
-            SetRemainTime(120f, Mathf.Min(maxRemainSeconds, remainSeconds + 50f));
+            SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + 50f));
         }
 
         void GenerateGameBoard(int rowSize, int columnSize)
