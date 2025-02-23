@@ -61,7 +61,7 @@ namespace GameALogic
         {
             nowStage++;
             GenerateGameBoard(rowSize, columnSize);
-            SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + 50f));
+            SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + (52f - nowStage)));
         }
 
         void GenerateGameBoard(int rowSize, int columnSize)
