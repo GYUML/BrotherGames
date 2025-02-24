@@ -22,7 +22,8 @@ namespace GameA
                 (remain) => Managers.UI.GetLayout<GameBoardLayout>().SetRemainCount(remain),
                 (maxTime, nowTime) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(maxTime, nowTime),
                 OnEndGame,
-                (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column));
+                (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column),
+                (targetCombo, nowCombo) => Managers.UI.GetLayout<GameBoardLayout>().SetCombo(targetCombo, nowCombo));
 
             Managers.AdventureLogic.SetGameBoardCallBack(
                 (gameBoard) => Managers.UI.GetLayout<GameBoardAdventureLayout>().SetBoard(gameBoard),

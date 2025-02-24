@@ -14,6 +14,7 @@ namespace GameALogic
         Action<float, float> onSetTimer;
         Action<int> onTimeOver;
         Action<int, int> onAcquire;
+        Action<int, int> onUpdateCombo;
 
         int rowSize;
         int columnSize;
@@ -23,6 +24,8 @@ namespace GameALogic
         int score = 0;
         float remainSeconds;
         int nowStage;
+        int nowCombo;
+        int targetCombo;
 
         private void Update()
         {
@@ -36,7 +39,7 @@ namespace GameALogic
             }
         }
 
-        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<int> onUpdateRemainCount, Action<float, float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire)
+        public void SetGameBoardCallBack(Action<int[,]> onUpdateGameBoard, Action<int> onUpdateScore, Action<int> onUpdateRemainCount, Action<float, float> onSetTimer, Action<int> onTimeOver, Action<int, int> onAcquire, Action<int, int> onUpdateCombo)
         {
             this.onUpdateGameBoard = onUpdateGameBoard;
             this.onUpdateScore = onUpdateScore;
@@ -44,6 +47,7 @@ namespace GameALogic
             this.onSetTimer = onSetTimer;
             this.onTimeOver = onTimeOver;
             this.onAcquire = onAcquire;
+            this.onUpdateCombo = onUpdateCombo;
         }
 
         public void StartGame(int rowSize, int columnSize)
@@ -51,6 +55,8 @@ namespace GameALogic
             this.rowSize = rowSize;
             this.columnSize = columnSize;
             nowStage = 1;
+            nowCombo = 0;
+            targetCombo = 5;
 
             ResetScore();
             GenerateGameBoard(rowSize, columnSize);
@@ -61,7 +67,7 @@ namespace GameALogic
         {
             nowStage++;
             GenerateGameBoard(rowSize, columnSize);
-            SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + (52f - nowStage)));
+            //SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + (52f - nowStage)));
         }
 
         void GenerateGameBoard(int rowSize, int columnSize)
@@ -94,7 +100,7 @@ namespace GameALogic
 
                 onUpdateGameBoard?.Invoke(gameBoard);
                 onUpdateRemainCount?.Invoke(GetPossibleCase());
-                Debug.Log($"Possible : {GetPossibleCase()}");
+                AddCombo();
 
                 if (GetPossibleCase() <= 0)
                     NextStage();
@@ -188,6 +194,19 @@ namespace GameALogic
             maxRemainSeconds = maxTime;
             remainSeconds = nowTime;
             onSetTimer?.Invoke(maxTime, nowTime);
+        }
+
+        void AddCombo()
+        {
+            nowCombo++;
+            if (nowCombo >= targetCombo)
+            {
+                SetRemainTime(100f, Mathf.Min(maxRemainSeconds, remainSeconds + 10f));
+                nowCombo = 0;
+                targetCombo++;
+            }
+
+            onUpdateCombo?.Invoke(targetCombo, nowCombo);
         }
     }
 }

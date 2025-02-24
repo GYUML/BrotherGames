@@ -14,6 +14,7 @@ namespace GameAUI
         public GameBoardItem itemPrefab;
         public TMP_Text scoreText;
         public TMP_Text remainText;
+        public TMP_Text comboText;
         public RectTransform timeGuage;
         public RectTransform acquireEffect;
         public GameObject timerIcon;
@@ -98,6 +99,11 @@ namespace GameAUI
         public void SetRemainCount(int remain)
         {
             remainText.text = $"Remain : {remain}";
+        }
+
+        public void SetCombo(int targetCombo, int nowCombo)
+        {
+            comboText.text = $"Combo\n{nowCombo}/{targetCombo}";
         }
 
         public void ShowAcquireEffect(int row, int column)
