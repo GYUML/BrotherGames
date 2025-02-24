@@ -84,6 +84,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9068718761029669882}
+  - component: {fileID: 1237574209674248025}
   m_Layer: 5
   m_Name: AdventureLayout
   m_TagString: Untagged
@@ -114,6 +115,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1237574209674248025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 369830367851393521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de0c438da5354e1438e06fcd18adb16f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startButton: {fileID: 2666243443530147088}
 --- !u!1 &583755982160921840
 GameObject:
   m_ObjectHideFlags: 0
@@ -1083,13 +1097,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7834462090696914785, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}
       propertyPath: m_Name
-      value: Classic
+      value: StartButton
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}
+--- !u!114 &2666243443530147088 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2505956339113063109, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}
+  m_PrefabInstance: {fileID: 560298251336341461}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5670d52570930c41bc685c34127a1d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &4640345982959993814 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5162046973914715139, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}

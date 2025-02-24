@@ -10,7 +10,8 @@ namespace GameA
         {
             Lobby = 0,
             MainGame = 1,
-            AdventureGame = 2
+            AdventureLobby = 2,
+            AdventureGame = 3
         }
 
         private void Start()
@@ -72,7 +73,11 @@ namespace GameA
                 Managers.UI.ShowLayout<GameBoardLayout>();
                 StartGame();
             }
-            else if(page == Page.AdventureGame)
+            else if (page == Page.AdventureLobby)
+            {
+                Managers.UI.ShowLayout<AdventureLobbyLayout>();
+            }
+            else if (page == Page.AdventureGame)
             {
                 Managers.UI.ShowLayout<GameBoardAdventureLayout>();
                 StartAdventureGame();

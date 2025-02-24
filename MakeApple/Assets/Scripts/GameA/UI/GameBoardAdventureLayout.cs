@@ -16,6 +16,7 @@ namespace GameAUI
         public RectTransform acquireEffect;
         public GameObject timerIcon;
         public TMP_Text questCount;
+        public Image questGuage;
 
         List<GameBoardItem> itemPool = new List<GameBoardItem>();
         Stack<RectTransform> effectPool = new Stack<RectTransform>();
@@ -92,6 +93,7 @@ namespace GameAUI
         public void SetQuestCount(int max, int now)
         {
             questCount.text = $"{now}/{max}";
+            questGuage.fillAmount = (1f - (float)now / max);
         }
 
         public void SetRemainCount(int remain)

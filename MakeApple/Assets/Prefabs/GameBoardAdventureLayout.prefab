@@ -34,7 +34,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -70, y: -80}
+  m_SizeDelta: {x: -40, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1021320473028020648
 GameObject:
@@ -109,7 +109,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5705216991214381485
 MonoBehaviour:
@@ -641,6 +641,7 @@ MonoBehaviour:
   acquireEffect: {fileID: 3733383525001853444}
   timerIcon: {fileID: 2088594146505683263}
   questCount: {fileID: 7435441880763807035}
+  questGuage: {fileID: 8262467817657171118}
 --- !u!1 &3365349088776362585
 GameObject:
   m_ObjectHideFlags: 0
@@ -891,7 +892,7 @@ RectTransform:
   m_GameObject: {fileID: 4794185232820670793}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.0461539, y: 1.0461539, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4046484784761593773}
