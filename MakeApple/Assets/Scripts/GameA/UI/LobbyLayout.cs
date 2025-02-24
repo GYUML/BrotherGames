@@ -8,11 +8,13 @@ using UnityEngine;
 public class LobbyLayout : UILayout
 {
     public KButton startButton;
+    public KButton adventureButton;
     public KButton rankingButton;
 
     private void Start()
     {
         startButton.onClick.AddListener(()=>Managers.Event.MovePage(EventController.Page.MainGame));
+        adventureButton.onClick.AddListener(() => Managers.Event.MovePage(EventController.Page.AdventureGame));
         rankingButton.onClick.AddListener(ShowRankingPopup);
     }
 

@@ -8,6 +8,7 @@ namespace GameA
         public static Managers Instance;
 
         public MainGameLogic mainGameLogic;
+        public AdventureGameLogic adventureGameLogic;
         public UIManager ui;
         public EventController eventController;
         public FileManager fileManager;
@@ -15,6 +16,7 @@ namespace GameA
         public UserDataController userData;
 
         public static MainGameLogic MainLogic { get { return Instance?.mainGameLogic; } }
+        public static AdventureGameLogic AdventureLogic { get { return Instance?.adventureGameLogic; } }
         public static UIManager UI { get { return Instance?.ui; } }
         public static EventController Event { get { return Instance?.eventController; } } 
         public static FileManager File { get { return Instance?.fileManager; } }

@@ -1,3 +1,4 @@
+using GameALogic;
 using GameAUI;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace GameA
         {
             Lobby = 0,
             MainGame = 1,
+            AdventureGame = 2
         }
 
         private void Start()
@@ -20,6 +22,14 @@ namespace GameA
                 (maxTime, nowTime) => Managers.UI.GetLayout<GameBoardLayout>().StartTimer(maxTime, nowTime),
                 OnEndGame,
                 (row, column) => Managers.UI.GetLayout<GameBoardLayout>().ShowAcquireEffect(row, column));
+
+            Managers.AdventureLogic.SetGameBoardCallBack(
+                (gameBoard) => Managers.UI.GetLayout<GameBoardAdventureLayout>().SetBoard(gameBoard),
+                (targetScore, nowScore) => Managers.UI.GetLayout<GameBoardAdventureLayout>().SetQuestCount(targetScore, nowScore),
+                (remain) => Managers.UI.GetLayout<GameBoardAdventureLayout>().SetRemainCount(remain),
+                (maxTime, nowTime) => Managers.UI.GetLayout<GameBoardAdventureLayout>().StartTimer(maxTime, nowTime),
+                OnAdventureGameEnd,
+                (row, column) => Managers.UI.GetLayout<GameBoardAdventureLayout>().ShowAcquireEffect(row, column));
 
             MovePage(Page.Lobby);
             Application.targetFrameRate = 60;
@@ -33,9 +43,22 @@ namespace GameA
             Managers.MainLogic.StartGame(rowSize, colSize);
         }
 
+        public void StartAdventureGame()
+        {
+            var rowSize = 10;
+            var colSize = 7;
+
+            Managers.AdventureLogic.StartGame(rowSize, colSize, 10);
+        }
+
         public void DragEnd(Vector2Int startPoint, Vector2Int endPoint)
         {
             Managers.MainLogic.DragEnd(startPoint, endPoint);
+        }
+
+        public void DragEndAdventure(Vector2Int startPoint, Vector2Int endPoint)
+        {
+            Managers.AdventureLogic.DragEnd(startPoint, endPoint);
         }
 
         public void MovePage(Page page)
@@ -48,6 +71,11 @@ namespace GameA
             {
                 Managers.UI.ShowLayout<GameBoardLayout>();
                 StartGame();
+            }
+            else if(page == Page.AdventureGame)
+            {
+                Managers.UI.ShowLayout<GameBoardAdventureLayout>();
+                StartAdventureGame();
             }
         }
 
@@ -68,6 +96,14 @@ namespace GameA
                     Managers.Event.MovePage(Page.Lobby);
                 },
                 Managers.UserData.GetUserUID(), score);
+        }
+
+        void OnAdventureGameEnd(int targetScore, int nowScore)
+        {
+            //Managers.UI.ShowPopup<LoadingPopup>();
+            Managers.UI.GetLayout<GameBoardAdventureLayout>().StopGame();
+            Managers.UI.ShowPopup<MessagePopup>().Set("Result", nowScore >= targetScore ? "Success" : "Failed");
+            MovePage(Page.Lobby);
         }
     }
 }

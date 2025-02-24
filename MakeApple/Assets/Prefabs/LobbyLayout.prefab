@@ -378,6 +378,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startButton: {fileID: 4174169915518589473}
+  adventureButton: {fileID: 6368316156615635577}
   rankingButton: {fileID: 467622581937843086}
 --- !u!1 &1552212687928715408
 GameObject:
@@ -2316,3 +2317,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5162046973914715139, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}
   m_PrefabInstance: {fileID: 8837821476432003260}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6368316156615635577 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2505956339113063109, guid: 84f71951dc2e84e46958fd9414e97db9, type: 3}
+  m_PrefabInstance: {fileID: 8837821476432003260}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5670d52570930c41bc685c34127a1d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
