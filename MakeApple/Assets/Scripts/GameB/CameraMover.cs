@@ -16,6 +16,8 @@ public class CameraMover : MonoBehaviour
     public float smoothTime;
     public float lerp;
     public Mode mode;
+    public bool moveX;
+    public bool moveY;
 
     Vector3 velocity;
 
@@ -32,7 +34,10 @@ public class CameraMover : MonoBehaviour
             else if (mode == Mode.Lerp)
                 calculatedPos = Vector3.Lerp(transform.position, targetPos, lerp);
 
-            transform.position = calculatedPos;
+            if (moveX)
+                transform.position = new Vector3(calculatedPos.x, transform.position.y, transform.position.z);
+            if (moveY)
+                transform.position = new Vector3(transform.position.x, calculatedPos.y, transform.position.z);
         }
     }
 
