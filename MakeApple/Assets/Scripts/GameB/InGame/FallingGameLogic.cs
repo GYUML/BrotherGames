@@ -1,4 +1,3 @@
-using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -43,7 +42,7 @@ namespace GameB
         {
             if (playingGame)
             {
-                if (nowHeight % 200 < 200)
+                if (nowHeight % 200 < 100)
                 {
                     if (nowHeight < spawnGemCounter)
                     {
@@ -107,6 +106,12 @@ namespace GameB
             Managers.UI.GetLayout<FallingGameLayout>().SetSpeed(nowFallingSpeed);
         }
 
+        void SpawnRandomItem(int code)
+        {
+            var randomPosition = new Vector2(Random.Range(-2f, 2f), -6f);
+            SpawnItem(code, randomPosition);
+        }
+
         void SpawnItemGem(int code, int count)
         {
             var randomIndex = Random.Range(-2, 3);
@@ -159,6 +164,8 @@ namespace GameB
             if (code == 1)
             {
                 item.GetComponent<BoxCollider2D>().size = new Vector2(0.2f, 0.2f);
+                item.GetComponent<BoxCollider2D>().isTrigger = true;
+                item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/Gem", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -168,6 +175,8 @@ namespace GameB
             else if (code == 2)
             {
                 item.GetComponent<BoxCollider2D>().size = new Vector2(0.3f, 0.3f);
+                item.GetComponent<BoxCollider2D>().isTrigger = false;
+                item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/Hammer", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -177,6 +186,8 @@ namespace GameB
             else if (code == 3)
             {
                 item.GetComponent<BoxCollider2D>().size = new Vector2(2.4f, 0.1f);
+                item.GetComponent<BoxCollider2D>().isTrigger = true;
+                item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/SelectItem", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -204,8 +215,8 @@ namespace GameB
             {
                 SetNowExp(nowExp + 10);
             }
-            else if (code == 2)
-                player.OnStun(1f);
+            //else if (code == 2)
+            //    player.OnStun(1f);
         }
 
         void SetAttack(long attack)

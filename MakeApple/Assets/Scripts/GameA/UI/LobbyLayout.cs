@@ -14,7 +14,7 @@ public class LobbyLayout : UILayout
     private void Start()
     {
         startButton.onClick.AddListener(()=>Managers.Event.MovePage(EventController.Page.MainGame));
-        adventureButton.onClick.AddListener(() => Managers.Event.MovePage(EventController.Page.AdventureLobby));
+        //adventureButton.onClick.AddListener(() => Managers.Event.MovePage(EventController.Page.AdventureLobby));
         rankingButton.onClick.AddListener(ShowRankingPopup);
     }
 

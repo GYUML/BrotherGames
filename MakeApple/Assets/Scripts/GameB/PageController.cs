@@ -20,10 +20,11 @@ public class PageController : MonoBehaviour
         MovePage(Page.Town);
     }
 
-    void MovePage(Page page)
+    public void MovePage(Page page)
     {
         SetUI(page);
         SetGameObject(page);
+        SetLogic(page);
     }
 
     void SetUI(Page page)
@@ -36,6 +37,9 @@ public class PageController : MonoBehaviour
                 Managers.UI.ShowLayout<TownLayout>();
                 break;
             case Page.FallingGame:
+                Managers.UI.ShowLayout<FallingGameLayout>();
+                Managers.UI.ShowPopup<FallingGameReadyPopup>();
+                break;
             case Page.EndGame:
                 Managers.UI.ShowLayout<FallingGameLayout>();
                 break;
@@ -47,5 +51,15 @@ public class PageController : MonoBehaviour
         town.SetActive(page == Page.Town);
         fallingGame.SetActive(page == Page.FallingGame);
         endGame.SetActive(page == Page.EndGame);
+    }
+
+    void SetLogic(Page page)
+    {
+        switch (page)
+        {
+            case Page.FallingGame:
+                Managers.GameLogic.SetGame();
+                break;
+        }
     }
 }

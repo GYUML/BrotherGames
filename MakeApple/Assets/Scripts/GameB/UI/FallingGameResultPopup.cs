@@ -12,6 +12,15 @@ namespace GameB
         public TMP_Text damageText;
         public KButton homeButton;
 
+        private void Start()
+        {
+            homeButton.onClick.AddListener(() =>
+            {
+                Managers.UI.HidePopup<FallingGameResultPopup>();
+                Managers.Page.MovePage(PageController.Page.Town);
+            });
+        }
+
         public void StartEndEffect(long max, long now)
         {
             StartCoroutine(ReduceHpGuage(max, now));
