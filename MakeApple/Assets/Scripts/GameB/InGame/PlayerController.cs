@@ -31,7 +31,7 @@ namespace GameB
             if (Time.time > stunEndTime)
                 rigid.AddForce(moveInput * speed);
 
-            var factorY = (3f - transform.position.y) / 5f;
+            var factorY = (3f - transform.position.y) / 3f;
             rigid.AddForce(Vector2.up * factorY * speed);
             Managers.GameLogic.SetFallingFactor(factorY);
         }
