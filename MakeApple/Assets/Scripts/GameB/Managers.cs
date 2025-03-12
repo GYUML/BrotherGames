@@ -11,12 +11,14 @@ namespace GameB
         public WebController webController;
         public FallingGameLogic gameLogic;
         public PageController pageController;
+        public TableData tableData;
 
         public static UIManager UI { get { return Instance?.ui; } }
         public static FileManager File { get { return Instance?.fileManager; } }
         public static WebController Web { get { return Instance?.webController; } }
         public static FallingGameLogic GameLogic { get { return Instance?.gameLogic; } }
         public static PageController Page { get { return Instance?.pageController; } }
+        public static TableData Table { get { return Instance?.tableData; } }
 
         private void Awake()
         {
