@@ -17,8 +17,8 @@ namespace GameB
 
         void OnClickStart()
         {
-            startButton.gameObject.SetActive(false);
             Managers.GameLogic.StartGame();
+            Managers.UI.HidePopup<FallingGameReadyPopup>();
         }
     }
 }

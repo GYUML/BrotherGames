@@ -1,12 +1,16 @@
+using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace GameB
 {
     public class FallingGameLogic : MonoBehaviour
     {
         public GameObject itemPrefab;
+        public GameObject newPrefab;
+
         public PlayerController player;
         public EndGameScene endGameScene;
 
@@ -21,6 +25,9 @@ namespace GameB
         List<GameObject> fallingItemList = new List<GameObject>();
         Stack<GameObject> fallingItemPool = new Stack<GameObject>();
 
+        List<GameObject> newItemList = new List<GameObject>();
+        Stack<GameObject> newItemPool = new Stack<GameObject>();
+
         Dictionary<string, Stack<GameObject>> prefabPool = new Dictionary<string, Stack<GameObject>>();
 
         double nowHeight;
@@ -28,8 +35,8 @@ namespace GameB
         float startTime;
         bool playingGame;
 
+        int nowLevel;
         long nowAttack;
-        long nowLevel;
         long nowExp;
 
         double spawnGemCounter;
@@ -42,36 +49,32 @@ namespace GameB
         {
             if (playingGame)
             {
-                if (nowHeight % 200 < 100)
+                if (nowHeight < spawnGemCounter)
                 {
-                    if (nowHeight < spawnGemCounter)
-                    {
-                        SpawnItemGem(1, 10);
-                        spawnGemCounter = nowHeight - spawnGemDistance;
-                    }
-                }
-                else if (nowHeight % 200 < 195)
-                {
-                    if (nowHeight < spawnObstacleCounter)
-                    {
-                        var count = Random.Range(1, 4);
-
-                        SpawnItemGem(1, 1);
-                        SpawnItemObstacle(2, count);
-                        spawnObstacleCounter = nowHeight - spawnObstacleDistance;
-                    }
+                    //SpawnItemGem(1, 10);
+                    spawnGemCounter = nowHeight - spawnGemDistance;
                 }
 
-                if (nowHeight <= 10)
+                if (nowHeight < spawnObstacleCounter)
+                {
+                    var count = Random.Range(3, 7);
+                    //SpawnItemObstacle(2, count);
+                    SpawnObstacleItemRandom();
+                    spawnObstacleCounter = nowHeight - spawnObstacleDistance;
+                }
+
+                if (nowHeight <= 0.25f)
                 {
                     var time = Time.time - startTime;
                     var score = startHeight / time * startHeight * nowAttack;
+
                     EndGame();
                 }
                 else
                 {
                     nowHeight -= nowFallingSpeed * Time.deltaTime;
                     Managers.UI.GetLayout<FallingGameLayout>().SetHeight(nowHeight);
+                    Managers.UI.GetLayout<FallingGameLayout>().SetBonusAttack(Managers.Table.GetBonusAttackPer(startHeight, fallingSpeed, Time.time - startTime));
                 }
             }
         }
@@ -82,7 +85,7 @@ namespace GameB
             nowHeight = startHeight;
             nowLevel = 1;
 
-            SetAttack(10);
+            SetAttack(Managers.Table.GetAttackPerLevel(nowLevel));
             SetNowExp(0);
 
             spawnGemCounter = startHeight;
@@ -97,11 +100,14 @@ namespace GameB
 
         public void SetFallingFactor(float factor)
         {
-            if (factor < 0) factor = 0;
+            factor = Mathf.Clamp01(factor);
 
-            nowFallingSpeed = fallingSpeed + factor * 4f;
+            nowFallingSpeed = fallingSpeed * (1 + factor);
             foreach (var falling in fallingItemList)
                 falling.GetComponent<FallingItem>().SetFallingSpeed(nowFallingSpeed);
+
+            foreach (var falling in newItemList)
+                falling.GetComponent<FallingObstacle>().SetFallingSpeed(nowFallingSpeed);
 
             Managers.UI.GetLayout<FallingGameLayout>().SetSpeed(nowFallingSpeed);
         }
@@ -132,8 +138,8 @@ namespace GameB
                 var randomIndex = Random.Range(0, positionSet.Length);
                 var randomPosition = new Vector2(0f, -6f);
 
-                while (randomIndex == prevCoinPosIndex)
-                    randomIndex = Random.Range(0, positionSet.Length);
+                //while (randomIndex == prevCoinPosIndex)
+                //    randomIndex = Random.Range(0, positionSet.Length);
                 randomPosition.x = positionSet[randomIndex];
 
                 SpawnItem(code, new Vector2(randomPosition.x, randomPosition.y - i * 0.5f));
@@ -142,8 +148,26 @@ namespace GameB
 
         void SpawnItemDuel(int code)
         {
-            SpawnItem(code, new Vector2(-1.5f, -6f));
-            SpawnItem(code, new Vector2(1.5f, -6f));
+            SpawnItemDuel(code, new Vector2(-1.5f, -6f));
+            SpawnItemDuel(code, new Vector2(1.5f, -6f));
+
+        }
+
+        void SpawnItemDuel(int code, Vector2 position)
+        {
+            var item = Instantiate(itemPrefab);
+            item.transform.position = position;
+            item.gameObject.SetActive(true);
+
+            item.GetComponent<BoxCollider2D>().size = new Vector2(2.4f, 0.1f);
+            item.GetComponent<BoxCollider2D>().isTrigger = true;
+            item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+            item.GetComponent<FallingItem>().Set(code, 2, minRange, maxRange, ReturnToPool, OnEnterPlayer);
+            if (TryGetPrefab("GameB/Prefabs/FallingItems/SelectItem", out var prefab))
+            {
+                prefab.transform.parent = item.transform;
+                prefab.transform.localPosition = Vector2.zero;
+            }
         }
 
         void SpawnItem(int code, Vector2 position)
@@ -158,7 +182,6 @@ namespace GameB
 
             var item = fallingItemPool.Pop();
             item.transform.position = position;
-            item.GetComponent<FallingItem>().Set(code, fallingSpeed, minRange, maxRange, ReturnToPool, OnEnterPlayer);
             item.gameObject.SetActive(true);
 
             if (code == 1)
@@ -166,6 +189,7 @@ namespace GameB
                 item.GetComponent<BoxCollider2D>().size = new Vector2(0.2f, 0.2f);
                 item.GetComponent<BoxCollider2D>().isTrigger = true;
                 item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+                item.GetComponent<FallingItem>().Set(code, fallingSpeed, minRange, maxRange, ReturnToPool, OnEnterPlayer);
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/Gem", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -177,6 +201,8 @@ namespace GameB
                 item.GetComponent<BoxCollider2D>().size = new Vector2(0.3f, 0.3f);
                 item.GetComponent<BoxCollider2D>().isTrigger = false;
                 item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+                item.GetComponent<Rigidbody2D>().mass = 1f;
+                item.GetComponent<FallingItem>().Set(code, fallingSpeed, minRange, maxRange, ReturnToPool, OnEnterPlayer);
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/Hammer", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -188,6 +214,7 @@ namespace GameB
                 item.GetComponent<BoxCollider2D>().size = new Vector2(2.4f, 0.1f);
                 item.GetComponent<BoxCollider2D>().isTrigger = true;
                 item.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+                item.GetComponent<FallingItem>().Set(code, fallingSpeed / 2f, minRange, maxRange, ReturnToPool, OnEnterPlayer);
                 if (TryGetPrefab("GameB/Prefabs/FallingItems/SelectItem", out var prefab))
                 {
                     prefab.transform.parent = item.transform;
@@ -195,6 +222,44 @@ namespace GameB
                 }
             }
         }
+
+        void SpawnObstacleItemRandom()
+        {
+            var randomPosition = new Vector2(Random.Range(-2f, 2f), -6f);
+            SpawnObstacleItem(randomPosition);
+        }
+
+        void SpawnObstacleItem(Vector2 position)
+        {
+            if (newItemPool.Count == 0)
+            {
+                var instantiated = Instantiate(newPrefab);
+                instantiated.gameObject.SetActive(false);
+                newItemPool.Push(instantiated);
+                newItemList.Add(instantiated);
+            }
+
+            var item = newItemPool.Pop();
+            item.transform.position = position;
+            item.gameObject.SetActive(true);
+
+            item.GetComponent<FallingObstacle>().Set((success) =>
+            {
+                if (success)
+                {
+                    nowCoin++;
+                    Managers.UI.GetLayout<FallingGameLayout>().SetCoin(nowCoin);
+                }
+            });
+
+            if (TryGetPrefab("GameB/Prefabs/FallingItems/Hammer", out var prefab))
+            {
+                prefab.transform.parent = item.transform;
+                prefab.transform.localPosition = Vector2.zero;
+            }
+        }
+
+        int nowCoin;
 
         void ReturnToPool(GameObject item)
         {
@@ -235,7 +300,7 @@ namespace GameB
                 nowExp -= maxExp;
                 nowLevel++;
                 maxExp = (nowLevel + 1) * 10;
-                SetAttack(nowAttack + 1);
+                SetAttack(Managers.Table.GetAttackPerLevel(nowLevel));
             }
 
             Managers.UI.GetLayout<FallingGameLayout>().SetExp(maxExp, nowExp);
@@ -280,11 +345,12 @@ namespace GameB
 
         void EndGame()
         {
+            var damage = (long)(nowAttack * (1 + Managers.Table.GetBonusAttackPer(startHeight, fallingSpeed, Time.time - startTime)));
             playingGame = false;
             ClearAll();
             player.gameObject.SetActive(false);
             endGameScene.gameObject.SetActive(true);
-            endGameScene.Play();
+            endGameScene.Play(100, damage);
         }
 
         void ClearAll()

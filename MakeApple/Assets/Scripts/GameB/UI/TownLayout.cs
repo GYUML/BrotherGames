@@ -26,6 +26,8 @@ namespace GameB
             bagButton.onClick.AddListener(OnClickBag);
             battleButton.onClick.AddListener(OnClickBattle);
 
+            battleTabStartButton.onClick.AddListener(() => Managers.Page.MovePage(PageController.Page.FallingGame));
+
             OnClickBattle();
         }
 

@@ -12,10 +12,11 @@ namespace GameB
         public TMP_Text attackText;
         public Image expGuage;
         public TMP_Text expText;
+        public TMP_Text bonusAttack;
 
         public void SetHeight(double height)
         {
-            heightText.text = $"{height:F1}m";
+            heightText.text = $"{height * 40f:F1}m";
         }
 
         public void SetCoin(int coin)
@@ -37,6 +38,11 @@ namespace GameB
         {
             expGuage.fillAmount = (float)now / max;
             expText.text = $"{now.ToFormat()}/{max.ToFormat()}";
+        }
+
+        public void SetBonusAttack(double bonusAttack)
+        {
+            this.bonusAttack.text = $"{bonusAttack * 100:F1}%";
         }
     }
 

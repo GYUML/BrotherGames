@@ -21,16 +21,16 @@ namespace GameB
             });
         }
 
-        public void StartEndEffect(long max, long now)
+        public void StartEndEffect(long maxHp, long damage)
         {
-            StartCoroutine(ReduceHpGuage(max, now));
+            StartCoroutine(ReduceHpGuage(maxHp, damage));
         }
 
-        IEnumerator ReduceHpGuage(long max, long now)
+        IEnumerator ReduceHpGuage(long maxHp, long damage)
         {
             var reduceTime = 1f;
             var reduceTimer = reduceTime;
-            var endValue = (float)now / max;
+            var endValue = Mathf.Max(0f, (float)(maxHp - damage) / maxHp);
 
             damageText.gameObject.SetActive(false);
             homeButton.gameObject.SetActive(false);
@@ -45,7 +45,7 @@ namespace GameB
             hpGuage.fillAmount = endValue;
 
             damageText.gameObject.SetActive(true);
-            damageText.text = $"{max - now}";
+            damageText.text = $"{damage}";
             damageText.rectTransform.anchoredPosition = new Vector2(0f, -140f);
             damageText.rectTransform.DOAnchorPosY(410f, 0.3f).OnComplete(() => homeButton.gameObject.SetActive(true));
         }
