@@ -5,113 +5,105 @@ using UnityEngine.UI;
 
 namespace GameC
 {
-    public class BattleLayout : MonoBehaviour
+    public class BattleLayout : UILayout
     {
         public Image mpGuage;
         public Image myHpGuage;
         public Image enemyHpGuage;
         public Image expGuage;
         public TMP_Text damageText;
+        public TMP_Text levelText;
+        public TMP_Text attackText;
 
-        public Animator player;
-        public Animator enemy;
-
-        public float maxMp;
-        public float nowMp;
-
-        public float mpCost;
-        public float mpRecovery;
-        public float mpCostFactor;
-
-        bool isCharging;
-        bool chargeLock;
-        float chargingTime;
-
-        long enemyMaxHp = 500;
-        long enemyHp = 500;
-        long myMaxHp = 500;
-        long myHp = 500;
-        long myExp = 0;
-        int myLevel = 1;
-
-        float enemyAttackTimer;
+        public KButton chargeButton;
+        public KButton nextButton;
+        public KButton startButton;
 
         private void Start()
         {
-            Application.targetFrameRate = 60;
+            nextButton.onClick.AddListener(() => Managers.Logic.GetComponent<GameLogic>().NextStage());
+            startButton.onClick.AddListener(() => Managers.Logic.GetComponent<GameLogic>().StartGame());
         }
 
-        private void Update()
+        public void SetChargeGuage(float nowCharge, float maxCharge)
         {
-            isCharging = Input.GetKey(KeyCode.Space);
+            if (maxCharge == 0)
+                return;
 
-            if (!chargeLock && isCharging)
-            {
-                nowMp -= mpCost * Time.deltaTime;
-                chargingTime += Time.deltaTime;
-            }
-            else
-            {
-                nowMp += mpRecovery * Time.deltaTime;
+            mpGuage.fillAmount = nowCharge / maxCharge;
+        }
 
-                if (chargingTime > 0)
-                {
-                    var chargingRate = chargingTime * 2f;
-                    var damage = (long)(chargingRate * chargingRate * chargingRate * 100f);
-                    enemyHp -= damage;
-                    chargingTime = 0;
+        public void SetChargeGuageColor(string hexColor)
+        {
+            if (ColorUtility.TryParseHtmlString(hexColor, out var color))
+                mpGuage.color = color;
+        }
 
-                    damageText.text = damage.ToString();
-                    damageText.rectTransform.DOKill();
-                    damageText.rectTransform.anchoredPosition = new Vector2(damageText.rectTransform.anchoredPosition.x, -227f);
-                    damageText.rectTransform.DOAnchorPosY(0f, 1f);
-                    player.SetTrigger("2_Attack");
+        public void SetExpGuage(long nowExp, long maxExp)
+        {
+            if (maxExp == 0)
+                return;
 
-                    if (enemyHp <= 0)
-                    {
-                        myExp += 10;
+            expGuage.fillAmount = (float)nowExp / maxExp;
+        }
 
-                        while (myExp >= myLevel * 50)
-                        {
-                            myExp -= myLevel * 50;
-                            myExp = 0;
-                            myLevel++;
-                            expGuage.fillAmount = (float)myExp / (myLevel * 50);
-                        }
+        public void SetMyHpGuage(long nowHp, long maxHp)
+        {
+            if (maxHp == 0)
+                return;
 
-                        enemyHp = enemyMaxHp;
-                    }
-                }
-            }
+            myHpGuage.fillAmount = (float)nowHp / maxHp;
+        }
 
-            if (enemyHp > 0 && Time.time > enemyAttackTimer)
-            {
-                enemyAttackTimer = Time.time + 1f;
-                myHp -= 10;
-                enemy.SetTrigger("2_Attack");
-            }
+        public void SetEnemyHpGuage(long nowHp, long maxHp)
+        {
+            if (maxHp == 0)
+                return;
 
-            if (nowMp <= 0)
-            {
-                //Debug.Log(chargingTime);
-                chargeLock = true;
-                chargingTime = 0;
+            enemyHpGuage.fillAmount = (float)nowHp / maxHp;
+        }
 
-                if (ColorUtility.TryParseHtmlString("#8A8A8A", out var color))
-                    mpGuage.color = color;
-            }
-            else if (nowMp >= maxMp)
-            {
-                chargeLock = false;
+        public void ShowDamage(long damage)
+        {
+            Debug.Log($"ShowDamage() damage={damage}");
+        }
 
-                if (ColorUtility.TryParseHtmlString("#E25656", out var color))
-                    mpGuage.color = color;
-            }
-            
-            nowMp = Mathf.Clamp(nowMp, 0, maxMp);
-            mpGuage.fillAmount = nowMp / maxMp;
-            myHpGuage.fillAmount = (float)myHp / myMaxHp;
-            enemyHpGuage.fillAmount = (float)enemyHp / enemyMaxHp;
+        public void ShowChargeButton()
+        {
+            startButton.gameObject.SetActive(false);
+            chargeButton.gameObject.SetActive(true);
+            nextButton.gameObject.SetActive(false);
+        }
+
+        public void ShowNextButton()
+        {
+            startButton.gameObject.SetActive(false);
+            chargeButton.gameObject.SetActive(false);
+            nextButton.gameObject.SetActive(true);
+        }
+
+        public void ShowStartButton()
+        {
+            startButton.gameObject.SetActive(true);
+            chargeButton.gameObject.SetActive(false);
+            nextButton.gameObject.SetActive(false);
+        }
+
+        public void HideButtons()
+        {
+            startButton.gameObject.SetActive(false);
+            chargeButton.gameObject.SetActive(false);
+            nextButton.gameObject.SetActive(false);
+        }
+
+        public void SetLevelText(int level)
+        {
+            levelText.text = $"Lv.{level}";
+        }
+
+        public void SetAttackText(long attack)
+        {
+            attackText.text = $"{attack}";
         }
     }
 }
