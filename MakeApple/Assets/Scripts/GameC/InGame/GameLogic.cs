@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameC
@@ -15,7 +17,6 @@ namespace GameC
         bool isCharging;
         bool chargeLock;
         float chargedMp;
-        float enemyAttackTimer;
 
         long enemyMaxHp = 50;
         long enemyHp = 50;
@@ -23,12 +24,14 @@ namespace GameC
         long myHp = 500;
         long myExp = 0;
         int myLevel = 1;
+        long myAttack = 10;
 
-        float movingEndTime;
-
-        int stage = 1;
+        int nowStage = 1;
+        List<Coroutine> nowProcList = new List<Coroutine>();
 
         GameState nowState;
+
+        StageType[] stageInfo = new StageType[] { StageType.None, StageType.Battle, StageType.Battle, StageType.Blessing, StageType.Battle, StageType.Recovery, StageType.Battle };
 
         private void Start()
         {
@@ -36,54 +39,18 @@ namespace GameC
             SetState(GameState.GameReady);
         }
 
-        private void Update()
-        {
-            if (nowState == GameState.Moving)
-                OnUpdateMovingState();
-            else if (nowState == GameState.Battle)
-                OnUpdateBattleState();
-            else if (nowState == GameState.BattleResult)
-                OnUpdateBattleResultState();
-        }
-
         public void StartGame()
         {
-            stage = 0;
+            nowStage = 0;
             NextStage();
-        }
-
-        public void SetState(GameState state)
-        {
-            nowState = state;
-
-            if (state == GameState.GameReady)
-            {
-                Managers.UI.GetLayout<BattleLayout>().ShowStartButton();
-            }
-            else if (state == GameState.Moving)
-            {
-                movingEndTime = Time.time + 3f;
-                battleMap.Move();
-            }
-            else if (state == GameState.Battle)
-            {
-                enemyMaxHp = stage * 50;
-                enemyHp = enemyMaxHp;
-
-                Managers.UI.GetLayout<BattleLayout>().ShowChargeButton();
-            }
-            else if (state == GameState.BattleResult)
-            {
-                Managers.UI.GetLayout<BattleLayout>().ShowNextButton();
-            }
         }
 
         public void NextStage()
         {
-            var lastStage = 50;
-            if (stage < lastStage)
+            nowStage++;
+
+            if (nowStage < stageInfo.Length)
             {
-                stage++;
                 SetState(GameState.Moving);
             }
             else
@@ -92,87 +59,222 @@ namespace GameC
             }
         }
 
-        void OnUpdateBattleState()
+        public void SetState(GameState state)
         {
-            isCharging = Input.GetKey(KeyCode.Space);
+            nowState = state;
 
-            if (!chargeLock && isCharging)
+            foreach (var proc in nowProcList)
             {
-                nowMp -= mpCost * Time.deltaTime;
-                chargedMp += mpCost * Time.deltaTime;
+                if (proc != null)
+                    StopCoroutine(proc);
             }
-            else
+
+            nowProcList.Clear();
+
+            if (state == GameState.GameReady)
+                nowProcList.Add(StartCoroutine(GameReadyProc()));
+            else if (state == GameState.Moving)
+                nowProcList.Add(StartCoroutine(MovingProc()));
+            else if (state == GameState.StageProgress)
+                nowProcList.Add(StartCoroutine(StageProgressProc()));
+            else if (state == GameState.StageResult)
+                nowProcList.Add(StartCoroutine(StageResultProc()));
+        }
+
+        IEnumerator GameReadyProc()
+        {
+            Managers.UI.GetLayout<BattleLayout>().ShowStartButton();
+
+            while (true)
             {
-                if (chargedMp > 0)
+                if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    var chargingRate = chargedMp / maxMp;
-                    var damage = (long)(chargingRate * chargingRate * chargingRate * 100f);
-                    enemyHp -= damage;
-
-                    Managers.UI.GetLayout<BattleLayout>().ShowDamage(damage);
-                    //player.SetTrigger("2_Attack");
-
-                    if (enemyHp <= 0)
-                    {
-                        myExp += 10;
-
-                        while (myExp >= myLevel * 50)
-                        {
-                            myExp -= myLevel * 50;
-                            myLevel++;
-                        }
-
-                        battleMap.EnemyDie();
-                        Managers.UI.GetLayout<BattleLayout>().SetExpGuage(myExp, myLevel * 50);
-                        Managers.UI.GetLayout<BattleLayout>().SetLevelText(myLevel);
-                        SetState(GameState.BattleResult);
-                    }
+                    StartGame();
+                    yield break;
                 }
 
-                nowMp += mpRecovery * Time.deltaTime;
-                chargedMp = 0;
+                yield return null;
+            }
+        }
+
+        IEnumerator MovingProc()
+        {
+            battleMap.SetStage(stageInfo[nowStage]);
+            battleMap.Move();
+            Managers.UI.GetLayout<BattleLayout>().HideButtons();
+
+            yield return new WaitForSeconds(3f);
+
+            SetState(GameState.StageProgress);
+        }
+
+        IEnumerator StageProgressProc()
+        {
+            var stageType = stageInfo[nowStage];
+
+            if (stageType == StageType.Battle)
+            {
+                nowProcList.Add(StartCoroutine(BattleProc()));
+                nowProcList.Add(StartCoroutine(BattleEnemyAttackProc()));
+            }
+            else if (stageType == StageType.Recovery)
+            {
+                nowProcList.Add(StartCoroutine(RecoveryProc()));
+            }
+            else if (stageType == StageType.Blessing)
+            {
+                nowProcList.Add(StartCoroutine(BlessingProc()));
             }
 
-            if (nowMp <= 0)
-            {
-                chargeLock = true;
-                nowMp = 0;
-                chargedMp = 0;
+            yield break;
+        }
 
-                Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#8A8A8A");
+        IEnumerator StageResultProc()
+        {
+            Managers.UI.GetLayout<BattleLayout>().ShowNextButton();
+
+            while (true)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    NextStage();
+                    yield break;
+                }
+                
+                yield return null;
             }
-            else if (nowMp >= maxMp)
-            {
-                chargeLock = false;
-                nowMp = maxMp;
+        }
 
-                Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#E25656");
+        IEnumerator BattleProc()
+        {
+            enemyMaxHp = nowStage * 50;
+            enemyHp = enemyMaxHp;
+
+            Managers.UI.GetLayout<BattleLayout>().ShowChargeButton();
+
+            while (true)
+            {
+                isCharging = Input.GetKey(KeyCode.Space);
+
+                if (!chargeLock && isCharging)
+                {
+                    nowMp -= mpCost * Time.deltaTime;
+                    chargedMp += mpCost * Time.deltaTime;
+                }
+                else
+                {
+                    if (chargedMp > 0)
+                    {
+                        var chargingRate = chargedMp / maxMp;
+                        var damage = (long)(chargingRate * chargingRate * 100f);
+                        enemyHp -= damage;
+
+                        Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.3f, -2f, 0f));
+                        battleMap.PlayerAttack();
+
+                        if (enemyHp <= 0)
+                        {
+                            myExp += 10;
+
+                            while (myExp >= myLevel * 50)
+                            {
+                                myExp -= myLevel * 50;
+                                myLevel++;
+                                myAttack += 2;
+                            }
+
+                            battleMap.EnemyDie();
+                            Managers.UI.GetLayout<BattleLayout>().SetExpGuage(myExp, myLevel * 50);
+                            Managers.UI.GetLayout<BattleLayout>().SetLevelText(myLevel);
+                            Managers.UI.GetLayout<BattleLayout>().SetAttackText(myAttack);
+                            SetState(GameState.StageResult);
+                        }
+                    }
+
+                    nowMp += mpRecovery * Time.deltaTime;
+                    chargedMp = 0;
+                }
+
+                if (nowMp <= 0)
+                {
+                    chargeLock = true;
+                    nowMp = 0;
+                    chargedMp = 0;
+
+                    Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#8A8A8A");
+                }
+                else if (nowMp >= maxMp)
+                {
+                    chargeLock = false;
+                    nowMp = maxMp;
+
+                    Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#E25656");
+                }
+
+                Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(nowMp, maxMp);
+                Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
+                Managers.UI.GetLayout<BattleLayout>().SetEnemyHpGuage(enemyHp, enemyMaxHp);
+
+                yield return null;
             }
+        }
 
-            if (enemyHp > 0 && Time.time > enemyAttackTimer)
+        IEnumerator BattleEnemyAttackProc()
+        {
+            while (enemyHp > 0)
             {
-                enemyAttackTimer = Time.time + 1f;
                 myHp -= 10;
-                //enemy.SetTrigger("2_Attack");
-            }
+                battleMap.EnemyAttack();
 
-            Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(nowMp, maxMp);
-            Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
-            Managers.UI.GetLayout<BattleLayout>().SetEnemyHpGuage(enemyHp, enemyMaxHp);
+                yield return new WaitForSeconds(1f);
+            }
         }
 
-        void OnUpdateMovingState()
+        IEnumerator RecoveryProc()
         {
-            if (Time.time > movingEndTime)
+            while (true)
             {
-                SetState(GameState.Battle);
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    myHp += 100;
+                    SetState(GameState.StageResult);
+                    Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
+
+                    yield break;
+                }
+
+                yield return null;
             }
         }
 
-        void OnUpdateBattleResultState()
+        IEnumerator BlessingProc()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
-                NextStage();
+            var success = 0;
+
+            while (true)
+            {
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                {
+                    var rand = Random.Range(0f, 1f);
+                    if (rand < Mathf.Max(1f - success * 0.2f, 0.2f))
+                        success++;
+                    else
+                    {
+                        success = 0;
+                        break;
+                    }
+                        
+                }
+                else if (Input.GetKeyDown(KeyCode.Alpha2))
+                {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            myAttack += success * 2;
+            SetState(GameState.StageResult);
         }
 
         public enum GameState
@@ -180,8 +282,16 @@ namespace GameC
             None,
             GameReady,
             Moving,
+            StageProgress,
+            StageResult
+        }
+        
+        public enum StageType
+        {
+            None,
             Battle,
-            BattleResult,
+            Recovery,
+            Blessing,
         }
     }
 }

@@ -10,6 +10,8 @@ namespace GameC
 
         public GameObject player;
         public GameObject enemy;
+        public GameObject fountain;
+        public GameObject blessingStatue;
 
         public float moveSpeed;
         public float mapMinX;
@@ -27,6 +29,11 @@ namespace GameC
             SpawnMap();
         }
 
+        public void SetStage(GameLogic.StageType stageType)
+        {
+            coroutinePlayer.AddCoroutine(SetStageProc(stageType));
+        }
+
         public void EnemyDie()
         {
             coroutinePlayer.AddCoroutine(EnemyDieProc());
@@ -35,6 +42,16 @@ namespace GameC
         public void Move()
         {
             coroutinePlayer.AddCoroutine(MoveProc());
+        }
+
+        public void PlayerAttack()
+        {
+            player.GetComponent<Animator>().SetTrigger("2_Attack");
+        }
+
+        public void EnemyAttack()
+        {
+            enemy.GetComponentInChildren<Animator>().SetTrigger("2_Attack");
         }
 
         void SpawnMap()
@@ -48,22 +65,43 @@ namespace GameC
             }
         }
 
+        IEnumerator SetStageProc(GameLogic.StageType stageType)
+        {
+            if (stageType == GameLogic.StageType.Battle)
+            {
+                enemy.GetComponentInChildren<Animator>().SetBool("isDeath", false);
+                enemy.transform.position = new Vector3(12.5f, 0f, 0f);
+                enemy.gameObject.SetActive(true);
+            }
+            else if (stageType == GameLogic.StageType.Recovery)
+            {
+                fountain.transform.position = new Vector3(13.15f, 1f, 0f);
+                fountain.gameObject.SetActive(true);
+            }
+            else if (stageType == GameLogic.StageType.Blessing)
+            {
+                blessingStatue.transform.position = new Vector3(13.15f, 1f, 0f);
+                blessingStatue.gameObject.SetActive(true);
+            }
+
+            yield return null;
+        }
+
         IEnumerator MoveProc()
         {
             var moveDistance = 12f;
             var moveCounter = 0f;
 
             player.GetComponent<Animator>().SetBool("1_Move", true);
-            enemy.transform.position += Vector3.right * 12f;
-            enemy.gameObject.SetActive(true);
 
             while (moveCounter < moveDistance)
             {
-                moveCounter += moveSpeed * Time.deltaTime;
+                var moveVector = moveSpeed * Time.deltaTime;
+                moveCounter += moveVector;
 
                 foreach (var ground in groundList)
                 {
-                    ground.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                    ground.transform.position += Vector3.left * moveVector;
                     if (ground.transform.position.x < mapMinX)
                     {
                         var newPosition = ground.transform.position;
@@ -72,7 +110,9 @@ namespace GameC
                     }
                 }
 
-                enemy.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+                enemy.transform.position += Vector3.left * moveVector;
+                fountain.transform.position += Vector3.left * moveVector;
+                blessingStatue.transform.position += Vector3.left * moveVector;
 
                 yield return null;
             }
@@ -82,9 +122,11 @@ namespace GameC
 
         IEnumerator EnemyDieProc()
         {
+            enemy.GetComponentInChildren<Animator>().SetBool("isDeath", true);
             enemy.GetComponentInChildren<Animator>().SetTrigger("4_Death");
-            yield return new WaitForSeconds(0.667f);
+            yield return new WaitForSeconds(0.7f);
             enemy.gameObject.SetActive(false);
+            Debug.Log("enemy off");
         }
     }
 }
