@@ -29,7 +29,7 @@ namespace GameC
             SpawnMap();
         }
 
-        public void SetStage(GameLogic.StageType stageType)
+        public void SetStage(StageType stageType)
         {
             coroutinePlayer.AddCoroutine(SetStageProc(stageType));
         }
@@ -65,20 +65,20 @@ namespace GameC
             }
         }
 
-        IEnumerator SetStageProc(GameLogic.StageType stageType)
+        IEnumerator SetStageProc(StageType stageType)
         {
-            if (stageType == GameLogic.StageType.Battle)
+            if (stageType == StageType.Battle)
             {
                 enemy.GetComponentInChildren<Animator>().SetBool("isDeath", false);
                 enemy.transform.position = new Vector3(12.5f, 0f, 0f);
                 enemy.gameObject.SetActive(true);
             }
-            else if (stageType == GameLogic.StageType.Recovery)
+            else if (stageType == StageType.Recovery)
             {
                 fountain.transform.position = new Vector3(13.15f, 1f, 0f);
                 fountain.gameObject.SetActive(true);
             }
-            else if (stageType == GameLogic.StageType.Blessing)
+            else if (stageType == StageType.Blessing)
             {
                 blessingStatue.transform.position = new Vector3(13.15f, 1f, 0f);
                 blessingStatue.gameObject.SetActive(true);

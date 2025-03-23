@@ -13,6 +13,7 @@ namespace GameC
         public float mpRecovery;
 
         public BattleMap battleMap;
+        public TableData tableData;
 
         bool isCharging;
         bool chargeLock;
@@ -31,8 +32,6 @@ namespace GameC
 
         GameState nowState;
 
-        StageType[] stageInfo = new StageType[] { StageType.None, StageType.Battle, StageType.Battle, StageType.Blessing, StageType.Battle, StageType.Recovery, StageType.Battle };
-
         private void Start()
         {
             Application.targetFrameRate = 60;
@@ -49,14 +48,14 @@ namespace GameC
         {
             nowStage++;
 
-            if (nowStage < stageInfo.Length)
+            if (tableData.IsLastStage(nowStage))
             {
-                battleMap.SetStage(stageInfo[nowStage]);
-                SetState(GameState.Moving);
+                Debug.Log("Game End");
             }
             else
             {
-                Debug.Log("Game End");
+                battleMap.SetStage(tableData.GetStageType(nowStage));
+                SetState(GameState.Moving);
             }
         }
 
@@ -111,7 +110,7 @@ namespace GameC
 
         IEnumerator StageProgressProc()
         {
-            var stageType = stageInfo[nowStage];
+            var stageType = tableData.GetStageType(nowStage);
 
             if (stageType == StageType.Battle)
             {
@@ -132,6 +131,10 @@ namespace GameC
 
         IEnumerator StageResultProc()
         {
+            nowMp = maxMp;
+            chargedMp = 0;
+
+            Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(nowMp, maxMp);
             Managers.UI.GetLayout<BattleLayout>().SetButton("Next", null);
             Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
@@ -177,7 +180,7 @@ namespace GameC
 
                         if (enemyHp <= 0)
                         {
-                            myExp += 10;
+                            myExp += (10 + nowStage);
 
                             while (myExp >= myLevel * 50)
                             {
@@ -239,7 +242,7 @@ namespace GameC
             {
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    myHp += 100;
+                    myHp += 300;
                     SetState(GameState.StageResult);
                     Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
 
@@ -288,14 +291,6 @@ namespace GameC
             Moving,
             StageProgress,
             StageResult
-        }
-        
-        public enum StageType
-        {
-            None,
-            Battle,
-            Recovery,
-            Blessing,
         }
     }
 }
