@@ -51,6 +51,7 @@ namespace GameC
 
             if (nowStage < stageInfo.Length)
             {
+                battleMap.SetStage(stageInfo[nowStage]);
                 SetState(GameState.Moving);
             }
             else
@@ -83,7 +84,8 @@ namespace GameC
 
         IEnumerator GameReadyProc()
         {
-            Managers.UI.GetLayout<BattleLayout>().ShowStartButton();
+            Managers.UI.GetLayout<BattleLayout>().SetButton("Start", null);
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
             while (true)
             {
@@ -99,9 +101,8 @@ namespace GameC
 
         IEnumerator MovingProc()
         {
-            battleMap.SetStage(stageInfo[nowStage]);
             battleMap.Move();
-            Managers.UI.GetLayout<BattleLayout>().HideButtons();
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(false);
 
             yield return new WaitForSeconds(3f);
 
@@ -131,7 +132,8 @@ namespace GameC
 
         IEnumerator StageResultProc()
         {
-            Managers.UI.GetLayout<BattleLayout>().ShowNextButton();
+            Managers.UI.GetLayout<BattleLayout>().SetButton("Next", null);
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
             while (true)
             {
@@ -150,7 +152,8 @@ namespace GameC
             enemyMaxHp = nowStage * 50;
             enemyHp = enemyMaxHp;
 
-            Managers.UI.GetLayout<BattleLayout>().ShowChargeButton();
+            Managers.UI.GetLayout<BattleLayout>().SetButton("Charge", null);
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
             while (true)
             {
@@ -169,7 +172,7 @@ namespace GameC
                         var damage = (long)(chargingRate * chargingRate * 100f);
                         enemyHp -= damage;
 
-                        Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.3f, -2f, 0f));
+                        Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.5f, 0.5f, 0f));
                         battleMap.PlayerAttack();
 
                         if (enemyHp <= 0)
@@ -256,6 +259,7 @@ namespace GameC
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
                     var rand = Random.Range(0f, 1f);
+                    Debug.Log(rand);
                     if (rand < Mathf.Max(1f - success * 0.2f, 0.2f))
                         success++;
                     else

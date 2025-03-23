@@ -1,6 +1,8 @@
 using DG.Tweening;
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace GameC
@@ -15,15 +17,7 @@ namespace GameC
         public TMP_Text levelText;
         public TMP_Text attackText;
 
-        public KButton chargeButton;
-        public KButton nextButton;
-        public KButton startButton;
-
-        private void Start()
-        {
-            nextButton.onClick.AddListener(() => Managers.Logic.GetComponent<GameLogic>().NextStage());
-            startButton.onClick.AddListener(() => Managers.Logic.GetComponent<GameLogic>().StartGame());
-        }
+        public KButton defaultButton;
 
         public void SetChargeGuage(float nowCharge, float maxCharge)
         {
@@ -63,37 +57,16 @@ namespace GameC
             enemyHpGuage.fillAmount = (float)nowHp / maxHp;
         }
 
-        public void ShowDamage(long damage)
+        public void SetButton(string buttonText, UnityAction onClick)
         {
-            Debug.Log($"ShowDamage() damage={damage}");
+            defaultButton.GetComponentInChildren<TMP_Text>().text = buttonText;
+            defaultButton.onClick.RemoveAllListeners();
+            defaultButton.onClick.AddListener(onClick);
         }
 
-        public void ShowChargeButton()
+        public void SetButtonEnable(bool enable)
         {
-            startButton.gameObject.SetActive(false);
-            chargeButton.gameObject.SetActive(true);
-            nextButton.gameObject.SetActive(false);
-        }
-
-        public void ShowNextButton()
-        {
-            startButton.gameObject.SetActive(false);
-            chargeButton.gameObject.SetActive(false);
-            nextButton.gameObject.SetActive(true);
-        }
-
-        public void ShowStartButton()
-        {
-            startButton.gameObject.SetActive(true);
-            chargeButton.gameObject.SetActive(false);
-            nextButton.gameObject.SetActive(false);
-        }
-
-        public void HideButtons()
-        {
-            startButton.gameObject.SetActive(false);
-            chargeButton.gameObject.SetActive(false);
-            nextButton.gameObject.SetActive(false);
+            defaultButton.enabled = enable;
         }
 
         public void SetLevelText(int level)
