@@ -13,11 +13,18 @@ namespace GameC
         public Image myHpGuage;
         public Image enemyHpGuage;
         public Image expGuage;
-        public TMP_Text damageText;
         public TMP_Text levelText;
         public TMP_Text attackText;
 
         public KButton defaultButton;
+
+        public ScrollRect logScrollRect;
+        public TMP_Text logText;
+
+        private void Start()
+        {
+            logText.gameObject.SetActive(false);
+        }
 
         public void SetChargeGuage(float nowCharge, float maxCharge)
         {
@@ -61,7 +68,8 @@ namespace GameC
         {
             defaultButton.GetComponentInChildren<TMP_Text>().text = buttonText;
             defaultButton.onClick.RemoveAllListeners();
-            defaultButton.onClick.AddListener(onClick);
+            if (onClick != null)
+                defaultButton.onClick.AddListener(onClick);
         }
 
         public void SetButtonEnable(bool enable)
@@ -77,6 +85,14 @@ namespace GameC
         public void SetAttackText(long attack)
         {
             attackText.text = $"{attack}";
+        }
+
+        public void AddLogText(string log)
+        {
+            var newLog = Instantiate(logText, logText.transform.parent);
+            newLog.text = log;
+            newLog.gameObject.SetActive(true);
+            logScrollRect.normalizedPosition = Vector2.zero;
         }
     }
 }
