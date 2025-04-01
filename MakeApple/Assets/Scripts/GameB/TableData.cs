@@ -1,3 +1,4 @@
+using GameC;
 using UnityEngine;
 
 namespace GameB

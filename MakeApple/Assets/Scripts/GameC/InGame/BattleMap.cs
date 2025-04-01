@@ -20,6 +20,7 @@ namespace GameC
         public float groundSpace;
 
         List<GameObject> groundList = new List<GameObject>();
+        Dictionary<int, GameObject> unitDic = new Dictionary<int, GameObject>();
 
         CoroutinePlayer coroutinePlayer = new CoroutinePlayer();
 
@@ -34,9 +35,9 @@ namespace GameC
             coroutinePlayer.AddCoroutine(SetStageProc(stageType));
         }
 
-        public void EnemyDie()
+        public void EnemyDie(int unitId)
         {
-            coroutinePlayer.AddCoroutine(EnemyDieProc());
+            coroutinePlayer.AddCoroutine(EnemyDieProc(unitId));
         }
 
         public void Move()
@@ -49,9 +50,30 @@ namespace GameC
             player.GetComponent<Animator>().SetTrigger("2_Attack");
         }
 
-        public void EnemyAttack()
+        public void EnemyAttack(int unitId)
         {
-            enemy.GetComponentInChildren<Animator>().SetTrigger("2_Attack");
+            if (unitDic.TryGetValue(unitId, out var unit))
+            {
+                unit.GetComponentInChildren<Animator>().SetTrigger("2_Attack");
+            }
+        }
+
+        public void OnDamaged(int unitId, long maxHp, long nowHp, long damage)
+        {
+            if (unitDic.TryGetValue(unitId, out var unit))
+            {
+                Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, unit.transform.position);
+                Managers.UI.GetLayout<BattleHudLayout>().UpdateHpBar(unit.transform, maxHp, nowHp);
+            }
+            else
+            {
+                Debug.LogError($"[BattleMap] OnDamaged() Not fount unit. unitId={unitId}");
+            }
+        }
+
+        public void SpawnUnits(List<int> unitIds)
+        {
+            coroutinePlayer.AddCoroutine(SpawnUnitsProc(unitIds));
         }
 
         void SpawnMap()
@@ -65,15 +87,37 @@ namespace GameC
             }
         }
 
+        void SpawnUnit(int unitId, long maxHp, long nowHp)
+        {
+            if (!unitDic.ContainsKey(unitId))
+            {
+                var unit = enemy;
+                unitDic.Add(unitId, unit);
+
+                unit.GetComponentInChildren<Animator>().SetBool("isDeath", false);
+                unit.transform.position = new Vector3(12.5f, 0f, 0f);
+                unit.gameObject.SetActive(true);
+
+                Managers.UI.GetLayout<BattleHudLayout>().RegisterHpBarTarget(unit.transform);
+                Managers.UI.GetLayout<BattleHudLayout>().UpdateHpBar(unit.transform, maxHp, nowHp);
+            }
+            else
+            {
+                Debug.LogError($"[BattleMap] Already Added. unitId={unitId}");
+            }
+        }
+
+        IEnumerator SpawnUnitsProc(List<int> unitIds)
+        {
+            foreach (var unitId in unitIds)
+                SpawnUnit(unitId, 100, 100);
+
+            yield return null;
+        }
+
         IEnumerator SetStageProc(StageType stageType)
         {
-            if (stageType == StageType.Battle)
-            {
-                enemy.GetComponentInChildren<Animator>().SetBool("isDeath", false);
-                enemy.transform.position = new Vector3(12.5f, 0f, 0f);
-                enemy.gameObject.SetActive(true);
-            }
-            else if (stageType == StageType.Recovery)
+            if (stageType == StageType.Recovery)
             {
                 fountain.transform.position = new Vector3(13.15f, 1f, 0f);
                 fountain.gameObject.SetActive(true);
@@ -110,7 +154,9 @@ namespace GameC
                     }
                 }
 
-                enemy.transform.position += Vector3.left * moveVector;
+                foreach (var unit in unitDic.Values)
+                    unit.transform.position += Vector3.left * moveVector;
+
                 fountain.transform.position += Vector3.left * moveVector;
                 blessingStatue.transform.position += Vector3.left * moveVector;
 
@@ -120,13 +166,18 @@ namespace GameC
             player.GetComponent<Animator>().SetBool("1_Move", false);
         }
 
-        IEnumerator EnemyDieProc()
+        IEnumerator EnemyDieProc(int unitId)
         {
-            enemy.GetComponentInChildren<Animator>().SetBool("isDeath", true);
-            enemy.GetComponentInChildren<Animator>().SetTrigger("4_Death");
-            yield return new WaitForSeconds(0.7f);
-            enemy.gameObject.SetActive(false);
-            Debug.Log("enemy off");
+            if (unitDic.TryGetValue(unitId, out var unit))
+            {
+                unit.GetComponentInChildren<Animator>().SetBool("isDeath", true);
+                unit.GetComponentInChildren<Animator>().SetTrigger("4_Death");
+                yield return new WaitForSeconds(0.7f);
+                unit.gameObject.SetActive(false);
+                unitDic.Remove(unitId);
+
+                Managers.UI.GetLayout<BattleHudLayout>().DeleteHpBarTarget(unit.transform);
+            }
         }
     }
 }

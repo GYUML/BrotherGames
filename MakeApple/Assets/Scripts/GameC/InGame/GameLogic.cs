@@ -54,6 +54,8 @@ namespace GameC
             }
             else
             {
+                var unitIds = new List<int>() { 0 };
+                battleMap.SpawnUnits(unitIds);
                 battleMap.SetStage(tableData.GetStageType(nowStage));
                 SetState(GameState.Moving);
             }
@@ -157,6 +159,7 @@ namespace GameC
 
             Managers.UI.GetLayout<BattleLayout>().SetButton("Charge", null);
             Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
+            Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet enemy.");
 
             while (true)
             {
@@ -175,21 +178,22 @@ namespace GameC
                         var damage = (long)(chargingRate * chargingRate * 100f);
                         enemyHp -= damage;
 
-                        Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.5f, 0.5f, 0f));
+                        //Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.5f, 0.5f, 0f));
                         battleMap.PlayerAttack();
+                        battleMap.OnDamaged(0, enemyMaxHp, enemyHp, damage);
 
                         if (enemyHp <= 0)
                         {
-                            myExp += (10 + nowStage);
+                            myExp += (10 + nowStage * 5);
 
-                            while (myExp >= myLevel * 50)
+                            while (myExp >= myLevel * 30)
                             {
                                 myExp -= myLevel * 50;
                                 myLevel++;
                                 myAttack += 2;
                             }
 
-                            battleMap.EnemyDie();
+                            battleMap.EnemyDie(0);
                             Managers.UI.GetLayout<BattleLayout>().SetExpGuage(myExp, myLevel * 50);
                             Managers.UI.GetLayout<BattleLayout>().SetLevelText(myLevel);
                             Managers.UI.GetLayout<BattleLayout>().SetAttackText(myAttack);
@@ -230,7 +234,7 @@ namespace GameC
             while (enemyHp > 0)
             {
                 myHp -= 10;
-                battleMap.EnemyAttack();
+                battleMap.EnemyAttack(0);
 
                 yield return new WaitForSeconds(1f);
             }
@@ -238,6 +242,8 @@ namespace GameC
 
         IEnumerator RecoveryProc()
         {
+            Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet fountain of recovery.");
+
             while (true)
             {
                 if (Input.GetKeyDown(KeyCode.Space))
@@ -256,6 +262,7 @@ namespace GameC
         IEnumerator BlessingProc()
         {
             var success = 0;
+            Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet statue of goddess.");
 
             while (true)
             {
@@ -264,13 +271,16 @@ namespace GameC
                     var rand = Random.Range(0f, 1f);
                     Debug.Log(rand);
                     if (rand < Mathf.Max(1f - success * 0.2f, 0.2f))
+                    {
                         success++;
+                        Managers.UI.GetLayout<BattleLayout>().AddLogText($"The prayer was successful.\n You can get +{success * 2} ATK");
+                    }
                     else
                     {
                         success = 0;
+                        Managers.UI.GetLayout<BattleLayout>().AddLogText("The goddess was angry with greed.");
                         break;
                     }
-                        
                 }
                 else if (Input.GetKeyDown(KeyCode.Alpha2))
                 {
