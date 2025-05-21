@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -49,7 +49,7 @@ public class MultiplayersBuildAndRun
             BuildTargetGroup.Android, BuildTarget.Android);
 
 		BuildPipeline.BuildPlayer(GetScenePaths(),
-			$"Builds/Android/{GetProjectName()}_{DateTime.Now.ToString("yyyyMMddHHmm")}.apk",
+			$"Builds/Android/{PlayerSettings.productName}/{PlayerSettings.productName}_{DateTime.Now.ToString("yyyyMMddHHmm")}.apk",
 				BuildTarget.Android, BuildOptions.None);
     }
 

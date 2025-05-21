@@ -11,19 +11,28 @@ namespace GameC
     {
         public Image mpGuage;
         public Image myHpGuage;
-        public Image enemyHpGuage;
         public Image expGuage;
         public TMP_Text levelText;
         public TMP_Text attackText;
+        public TMP_Text chargedText;
 
-        public KButton defaultButton;
+        public EventButton defaultButton;
 
         public ScrollRect logScrollRect;
         public TMP_Text logText;
 
         private void Start()
         {
-            logText.gameObject.SetActive(false);
+            defaultButton.onDown.AddListener(() => Managers.Logic.GetComponent<GameLogic>().OnCharging(true));
+            defaultButton.onUp.AddListener(() => Managers.Logic.GetComponent<GameLogic>().OnCharging(false));
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+                defaultButton.onDown?.Invoke();
+            if (Input.GetKeyUp(KeyCode.Space))
+                defaultButton.onUp?.Invoke();
         }
 
         public void SetChargeGuage(float nowCharge, float maxCharge)
@@ -40,6 +49,11 @@ namespace GameC
                 mpGuage.color = color;
         }
 
+        public void SetChargeText(float charge)
+        {
+            chargedText.text = $"{charge:F1}%";
+        }
+
         public void SetExpGuage(long nowExp, long maxExp)
         {
             if (maxExp == 0)
@@ -54,14 +68,6 @@ namespace GameC
                 return;
 
             myHpGuage.fillAmount = (float)nowHp / maxHp;
-        }
-
-        public void SetEnemyHpGuage(long nowHp, long maxHp)
-        {
-            if (maxHp == 0)
-                return;
-
-            enemyHpGuage.fillAmount = (float)nowHp / maxHp;
         }
 
         public void SetButton(string buttonText, UnityAction onClick)
@@ -89,9 +95,7 @@ namespace GameC
 
         public void AddLogText(string log)
         {
-            var newLog = Instantiate(logText, logText.transform.parent);
-            newLog.text = log;
-            newLog.gameObject.SetActive(true);
+            logText.text = logText.text + "\n" + log;
             logScrollRect.normalizedPosition = Vector2.zero;
         }
     }

@@ -8,9 +8,7 @@ namespace GameC
     {
         public float maxMp;
         public float nowMp;
-
         public float mpCost;
-        public float mpRecovery;
 
         public BattleMap battleMap;
         public TableData tableData;
@@ -31,11 +29,13 @@ namespace GameC
         List<Coroutine> nowProcList = new List<Coroutine>();
 
         GameState nowState;
+        StageType nowStageType;
 
         private void Start()
         {
             Application.targetFrameRate = 60;
             SetState(GameState.GameReady);
+            battleMap.SpawnPlayer(myMaxHp, myHp);
         }
 
         public void StartGame()
@@ -48,15 +48,26 @@ namespace GameC
         {
             nowStage++;
 
-            if (tableData.IsLastStage(nowStage))
+            //if (tableData.IsLastStage(nowStage))
+            if (nowStage > 50)
             {
                 Debug.Log("Game End");
             }
             else
             {
-                var unitIds = new List<int>() { 0 };
-                battleMap.SpawnUnits(unitIds);
-                battleMap.SetStage(tableData.GetStageType(nowStage));
+                var rand = Random.Range(0f, 1f);
+                if (rand < 0.8f) nowStageType = StageType.Battle;
+                else if (rand < 0.9f) nowStageType = StageType.Blessing;
+                else nowStageType = StageType.Recovery;
+
+                if (nowStageType == StageType.Battle)
+                {
+                    enemyMaxHp = nowStage * 200;
+                    enemyHp = enemyMaxHp;
+                    battleMap.SpawnUnit(enemyMaxHp, enemyHp);
+                }
+
+                battleMap.SetStage(nowStageType);
                 SetState(GameState.Moving);
             }
         }
@@ -83,15 +94,24 @@ namespace GameC
                 nowProcList.Add(StartCoroutine(StageResultProc()));
         }
 
+        public void OnCharging(bool isKeyDown)
+        {
+            isCharging = isKeyDown;
+        }
+
         IEnumerator GameReadyProc()
         {
             Managers.UI.GetLayout<BattleLayout>().SetButton("Start", null);
             Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
+            Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(0f, 1f);
+            Managers.UI.GetLayout<BattleLayout>().SetChargeText(0f);
+
             while (true)
             {
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (isCharging)
                 {
+                    isCharging = false;
                     StartGame();
                     yield break;
                 }
@@ -105,14 +125,15 @@ namespace GameC
             battleMap.Move();
             Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(false);
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(1f);
 
             SetState(GameState.StageProgress);
         }
 
         IEnumerator StageProgressProc()
         {
-            var stageType = tableData.GetStageType(nowStage);
+            //var stageType = tableData.GetStageType(nowStage);
+            var stageType = nowStageType;
 
             if (stageType == StageType.Battle)
             {
@@ -133,8 +154,8 @@ namespace GameC
 
         IEnumerator StageResultProc()
         {
-            nowMp = maxMp;
-            chargedMp = 0;
+            nowMp = 0f;
+            chargedMp = 0f;
 
             Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(nowMp, maxMp);
             Managers.UI.GetLayout<BattleLayout>().SetButton("Next", null);
@@ -142,8 +163,9 @@ namespace GameC
 
             while (true)
             {
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (isCharging)
                 {
+                    isCharging = false;
                     NextStage();
                     yield break;
                 }
@@ -154,33 +176,28 @@ namespace GameC
 
         IEnumerator BattleProc()
         {
-            enemyMaxHp = nowStage * 50;
-            enemyHp = enemyMaxHp;
-
             Managers.UI.GetLayout<BattleLayout>().SetButton("Charge", null);
             Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
             Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet enemy.");
 
             while (true)
             {
-                isCharging = Input.GetKey(KeyCode.Space);
-
-                if (!chargeLock && isCharging)
+                if (isCharging)
                 {
-                    nowMp -= mpCost * Time.deltaTime;
                     chargedMp += mpCost * Time.deltaTime;
+                    chargedMp %= 2 * maxMp;
+                    nowMp = chargedMp > maxMp ? 2 * maxMp - chargedMp : chargedMp;
                 }
                 else
                 {
                     if (chargedMp > 0)
                     {
-                        var chargingRate = chargedMp / maxMp;
+                        var chargingRate = nowMp / maxMp;
                         var damage = (long)(chargingRate * chargingRate * 100f);
                         enemyHp -= damage;
 
-                        //Managers.UI.GetLayout<BattleHudLayout>().SpawnDamageText(damage, new Vector3(0.5f, 0.5f, 0f));
                         battleMap.PlayerAttack();
-                        battleMap.OnDamaged(0, enemyMaxHp, enemyHp, damage);
+                        battleMap.OnDamaged(enemyMaxHp, enemyHp, damage);
 
                         if (enemyHp <= 0)
                         {
@@ -193,7 +210,7 @@ namespace GameC
                                 myAttack += 2;
                             }
 
-                            battleMap.EnemyDie(0);
+                            battleMap.EnemyDie();
                             Managers.UI.GetLayout<BattleLayout>().SetExpGuage(myExp, myLevel * 50);
                             Managers.UI.GetLayout<BattleLayout>().SetLevelText(myLevel);
                             Managers.UI.GetLayout<BattleLayout>().SetAttackText(myAttack);
@@ -201,29 +218,14 @@ namespace GameC
                         }
                     }
 
-                    nowMp += mpRecovery * Time.deltaTime;
                     chargedMp = 0;
-                }
-
-                if (nowMp <= 0)
-                {
-                    chargeLock = true;
                     nowMp = 0;
-                    chargedMp = 0;
-
-                    Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#8A8A8A");
-                }
-                else if (nowMp >= maxMp)
-                {
-                    chargeLock = false;
-                    nowMp = maxMp;
-
-                    Managers.UI.GetLayout<BattleLayout>().SetChargeGuageColor("#E25656");
                 }
 
                 Managers.UI.GetLayout<BattleLayout>().SetChargeGuage(nowMp, maxMp);
                 Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
-                Managers.UI.GetLayout<BattleLayout>().SetEnemyHpGuage(enemyHp, enemyMaxHp);
+                if (isCharging)
+                    Managers.UI.GetLayout<BattleLayout>().SetChargeText(nowMp / maxMp * 100f);
 
                 yield return null;
             }
@@ -234,7 +236,7 @@ namespace GameC
             while (enemyHp > 0)
             {
                 myHp -= 10;
-                battleMap.EnemyAttack(0);
+                battleMap.EnemyAttack();
 
                 yield return new WaitForSeconds(1f);
             }
@@ -243,11 +245,13 @@ namespace GameC
         IEnumerator RecoveryProc()
         {
             Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet fountain of recovery.");
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
             while (true)
             {
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (isCharging)
                 {
+                    isCharging = false;
                     myHp += 300;
                     SetState(GameState.StageResult);
                     Managers.UI.GetLayout<BattleLayout>().SetMyHpGuage(myHp, myMaxHp);
@@ -263,11 +267,13 @@ namespace GameC
         {
             var success = 0;
             Managers.UI.GetLayout<BattleLayout>().AddLogText("Meet statue of goddess.");
+            Managers.UI.GetLayout<BattleLayout>().SetButtonEnable(true);
 
             while (true)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1))
+                if (isCharging)
                 {
+                    isCharging = false;
                     var rand = Random.Range(0f, 1f);
                     Debug.Log(rand);
                     if (rand < Mathf.Max(1f - success * 0.2f, 0.2f))
@@ -301,6 +307,12 @@ namespace GameC
             Moving,
             StageProgress,
             StageResult
+        }
+
+        public struct Stat
+        {
+            public long hp;
+            public long attack;
         }
     }
 }

@@ -2,6 +2,7 @@ using DG.Tweening;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace GameC
 {
@@ -61,6 +62,10 @@ namespace GameC
                 var hpGuage = hpGuagePool.Count > 0 ? hpGuagePool.Pop() : Instantiate(hpGuagePrefab, hpGuagePrefab.transform.parent);
                 hpGuage.gameObject.SetActive(true);
                 hpGuageTargetDic.Add(targetTransform, hpGuage);
+
+                var anchoredPosition = WorldToAnchored(targetTransform.position, rectTransform);
+                anchoredPosition.y += 100;
+                hpGuage.SetPosition(anchoredPosition);
             }
             else
             {
