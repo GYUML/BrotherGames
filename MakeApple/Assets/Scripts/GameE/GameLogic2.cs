@@ -36,7 +36,6 @@ namespace GameE
         public int maxSpawnCount;
 
         float respawnTime;
-        int nowSpawnCount;
 
         FieldData fieldData;
         PlayerData playerData;
@@ -115,7 +114,7 @@ namespace GameE
             {
                 for (int i = 0; i < 5; i++)
                 {
-                    if (nowSpawnCount < maxSpawnCount)
+                    if (fieldData.GetNowMonsterCount() < maxSpawnCount)
                     {
                         fieldData.SpawnMonster(1);
                     }
@@ -200,7 +199,6 @@ namespace GameE
         void OnSpawnMonster(int id, long maxHp, long nowHp)
         {
             monsterSpawner.Spawn(id);
-            nowSpawnCount++;
         }
 
         void OnAttackMonster(int id, long maxHp, long nowHp, long[] damages)
@@ -224,7 +222,6 @@ namespace GameE
             {
                 monsterSpawner.Despawn(id);
                 dropItemSpawner.DropItem(monster.transform.position, 5, AcquireItem);
-                nowSpawnCount--;
 
                 AddExp(50);
             }
@@ -304,6 +301,11 @@ namespace GameE
                     onDeadMonster?.Invoke(monsterId);
                 }
             }
+        }
+
+        public int GetNowMonsterCount()
+        {
+            return monsters.Count;
         }
 
         bool TryGetMonster(int id, out Monster monster)
