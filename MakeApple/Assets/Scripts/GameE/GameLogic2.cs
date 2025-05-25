@@ -299,7 +299,10 @@ namespace GameE
                 onAttackMonster?.Invoke(monsterId, monster.originStat.hp, monster.nowStat.hp, damages);
 
                 if (!monster.IsAlive())
+                {
+                    monsters.Remove(monster);
                     onDeadMonster?.Invoke(monsterId);
+                }
             }
         }
 
