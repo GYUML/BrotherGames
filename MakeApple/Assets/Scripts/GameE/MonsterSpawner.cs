@@ -11,6 +11,11 @@ namespace GameE
         Stack<EnemyUnit> monsterPool = new Stack<EnemyUnit>();
         Dictionary<int, EnemyUnit> monsterDic = new Dictionary<int, EnemyUnit>();
 
+        private void Start()
+        {
+            monsterPrefab.gameObject.SetActive(false);
+        }
+
         public void Spawn(int id)
         {
             var pos = new Vector2(Random.Range(-10f, 10f), 0.5f);

@@ -31,7 +31,6 @@ namespace GameE
         HashSet<KeyType> keyPressed = new HashSet<KeyType>();
         HashSet<KeyType> keyJustPressed = new HashSet<KeyType>();
 
-        public EnemyUnit monsterPrefab;
         public float respawnDelay;
         public int maxSpawnCount;
 
@@ -46,7 +45,6 @@ namespace GameE
             fieldData = new FieldData(OnSpawnMonster, OnAttackMonster, OnDeadMonster);
             playerData = new PlayerData();
 
-            monsterPrefab.gameObject.SetActive(false);
             AddExp(0);
         }
 
