@@ -16,6 +16,7 @@ namespace GameE
 
         public EffectSpawner effectSpawner;
         public DropItemSpawner dropItemSpawner;
+        public MonsterSpawner monsterSpawner;
 
         public Vector2 attackEffectOffset;
         public Vector2 jumpEffectOffset;
@@ -34,8 +35,6 @@ namespace GameE
         public float respawnDelay;
         public int maxSpawnCount;
 
-        Stack<EnemyUnit> monsterPool = new Stack<EnemyUnit>();
-        Dictionary<int, EnemyUnit> monsterDic = new Dictionary<int, EnemyUnit>();
         float respawnTime;
         int nowSpawnCount;
 
@@ -59,7 +58,6 @@ namespace GameE
                 if (IsKeyPressed(KeyType.Attack))
                 {
                     attackMotionEnd = Time.time + 0.4f;
-                    //playerController.MoveX(0f);
                     playerController.Attack();
                     StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
                 }
@@ -118,7 +116,9 @@ namespace GameE
                 for (int i = 0; i < 5; i++)
                 {
                     if (nowSpawnCount < maxSpawnCount)
+                    {
                         fieldData.SpawnMonster(1);
+                    }
                 }
 
                 respawnTime = Time.time + respawnDelay;
@@ -199,46 +199,38 @@ namespace GameE
 
         void OnSpawnMonster(int id, long maxHp, long nowHp)
         {
-            var pos = new Vector2(Random.Range(-10f, 10f), 0.5f);
-            var monster = monsterPool.Count > 0 ? monsterPool.Pop() : Instantiate(monsterPrefab);
-            monster.transform.position = pos;
-            monster.gameObject.SetActive(true);
-            monster.Init(id);
-            monsterDic.Add(id, monster);
+            monsterSpawner.Spawn(id);
             nowSpawnCount++;
         }
 
         void OnAttackMonster(int id, long maxHp, long nowHp, long[] damages)
         {
-            if (monsterDic.TryGetValue(id, out var monster))
+            if (monsterSpawner.TryGetMonster(id, out var monster))
             {
                 hudLayout.UpdateHealthBar(monster.transform, maxHp, nowHp);
+                hudLayout.SpawnDamageText(damages, monster.transform.position);
                 effectSpawner.ShowHitEffect(monster.transform.position, damages.Length);
                 monster.SetChaseTarget(playerController.transform);
-                hudLayout.SpawnDamageText(damages, monster.transform.position);
             }
             else
             {
-                Debug.LogError($"OnAttackedMonster() Failed to find id={id}");
+                Debug.LogError($"OnAttackedMonster() Failed to find Monster. id={id}");
             }
         }
 
         void OnDeadMonster(int id)
         {
-            if (monsterDic.ContainsKey(id))
+            if (monsterSpawner.TryGetMonster(id, out var monster))
             {
-                var monster = monsterDic[id];
-                monster.gameObject.SetActive(false);
-                monsterPool.Push(monster);
-                monsterDic.Remove(id);
-                nowSpawnCount--;
+                monsterSpawner.Despawn(id);
                 dropItemSpawner.DropItem(monster.transform.position, 5, AcquireItem);
+                nowSpawnCount--;
 
-                AddExp(20);
+                AddExp(50);
             }
             else
             {
-                Debug.LogError($"OnDeadMonster() Failed to find id={id}");
+                Debug.LogError($"OnDeadMonster() Failed to find Monster. id={id}");
             }
         }
 
@@ -249,20 +241,25 @@ namespace GameE
 
         void AddExp(long addExp)
         {
-            var needExp = playerData.level * 100;
+            var needExp = GetNeedExp(playerData.level);
             playerData.exp += addExp;
 
             while (playerData.exp >= needExp)
             {
                 playerData.exp -= needExp;
                 playerData.level++;
-                needExp = playerData.level * 20;
+                needExp = GetNeedExp(playerData.level);
 
                 effectSpawner.ShowLevelUpEffect(playerController.transform.position);
             }
 
             stateLayout.SetExpGuage(needExp, playerData.exp);
             stateLayout.SetLevel(playerData.level);
+        }
+
+        long GetNeedExp(int level)
+        {
+            return level * 100;
         }
     }
 
