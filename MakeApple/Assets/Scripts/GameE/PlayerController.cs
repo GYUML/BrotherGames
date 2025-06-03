@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using UnityEngine.Windows;
 
 namespace GameE
@@ -28,6 +29,8 @@ namespace GameE
         Collider2D nowGroundCol;
         Collider2D ignoreGroundCol;
 
+        readonly float LinearVelocityThreshHold = 0.01f;
+
         private void Start()
         {
             groundLayer = LayerMask.GetMask("Ground");
@@ -35,17 +38,17 @@ namespace GameE
 
         private void FixedUpdate()
         {
-            if (playerRb.linearVelocityY > 0)
+            if (playerRb.linearVelocityY > LinearVelocityThreshHold)
             {
                 isGrounded = false;
             }
-            else if (playerRb.linearVelocityY <= 0f)
+            else
             {
                 if (!IsGrounded())
                 {
                     nowGroundCol = Physics2D.OverlapBox(transform.TransformPoint(groundCheckPoint), transform.lossyScale * groundCheckSize, 0f, groundLayer);
                     if (nowGroundCol != ignoreGroundCol)
-                        isGrounded = nowGroundCol != null && transform.position.y > nowGroundCol.bounds.center.y;
+                        isGrounded = nowGroundCol != null;// && transform.position.y > nowGroundCol.bounds.center.y;
                 }
             }
             
@@ -116,7 +119,22 @@ namespace GameE
         public void DownJump()
         {
             var rayHits = Physics2D.RaycastAll(playerRb.position, Vector2.down, 4f, groundLayer);
-            if (rayHits.Length > 1)
+            var groundCount = 0;
+
+            if (rayHits.Length > 0)
+            {
+                foreach (var rayHit in rayHits)
+                {
+                    var tileMap = rayHit.collider.GetComponent<Tilemap>();
+                    if (tileMap != null)
+                    {
+                        var underneathCount = GameUtil.GetTilesUnderneathCount(tileMap, transform.position, 10);
+                        groundCount += underneathCount;
+                    }
+                }
+            }
+
+            if (groundCount > 1)
             {
                 Debug.Log("DownJump");
                 StartCoroutine(IgnoreColliderCo());
@@ -124,7 +142,7 @@ namespace GameE
 
             IEnumerator IgnoreColliderCo()
             {
-                var ignoreTimeout = Time.fixedTime + 0.5f;
+                var ignoreTimeout = Time.fixedTime + 0.2f;
                 ignoreGroundCol = nowGroundCol;
                 isGrounded = false;
                 Physics2D.IgnoreCollision(playerCol, ignoreGroundCol, true);

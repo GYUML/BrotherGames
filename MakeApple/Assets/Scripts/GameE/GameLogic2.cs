@@ -18,9 +18,6 @@ namespace GameE
         public DropItemSpawner dropItemSpawner;
         public MonsterSpawner monsterSpawner;
 
-        public Vector2 attackEffectOffset;
-        public Vector2 jumpEffectOffset;
-
         public Vector2 attackRangeSize;
         public Vector2 attackRangeOffset;
         public int maxAttackTargetCount;
