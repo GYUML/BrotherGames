@@ -22,6 +22,9 @@ namespace GameE
         public Vector2 attackRangeOffset;
         public int maxAttackTargetCount;
 
+        public float attackCoolTime = 0.4f;
+        public float attackDamageDelay = 0.2f;
+
         float attackMotionEnd;
         float downJumpTimeLimit;
 
@@ -47,60 +50,60 @@ namespace GameE
 
         private void FixedUpdate()
         {
-            if (Time.time > attackMotionEnd)
-            {
-                if (IsKeyPressed(KeyType.Attack))
-                {
-                    attackMotionEnd = Time.time + 0.4f;
-                    playerController.Attack();
-                    StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
-                }
-                else
-                {
-                    var inputX = IsKeyPressed(KeyType.MoveLeft) ? -1f : IsKeyPressed(KeyType.MoveRight) ? 1f : 0f;
-                    playerController.MoveX(inputX);
+            //if (Time.time > attackMotionEnd)
+            //{
+            //    if (IsKeyPressed(KeyType.Attack))
+            //    {
+            //        attackMotionEnd = Time.time + attackCoolTime;
+            //        playerController.Attack();
+            //        StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
+            //    }
+            //    else
+            //    {
+            //        var inputX = IsKeyPressed(KeyType.MoveLeft) ? -1f : IsKeyPressed(KeyType.MoveRight) ? 1f : 0f;
+            //        playerController.MoveX(inputX);
 
-                    if (playerController.IsGrounded())
-                    {
-                        if (IsKeyJustPressed(KeyType.Down))
-                        {
-                            if (Time.fixedTime < downJumpTimeLimit)
-                            {
-                                playerController.DownJump();
-                                downJumpTimeLimit = 0f;
-                            }
-                            else
-                            {
-                                downJumpTimeLimit = Time.fixedTime + 0.2f;
-                            }
-                        }
-                        if (IsKeyPressed(KeyType.JumpLeft))
-                            playerController.Jump(-1f);
-                        else if (IsKeyPressed(KeyType.JumpRight))
-                            playerController.Jump(1f);
-                        else if (IsKeyPressed(KeyType.Jump))
-                            playerController.Jump(0f);
-                    }
-                    else
-                    {
-                        if (IsKeyJustPressed(KeyType.Jump))
-                        {
-                            if (IsKeyPressed(KeyType.MoveLeft))
-                                playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
-                            else if (IsKeyPressed(KeyType.MoveRight))
-                                playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
-                            else
-                                playerController.DoubleJump(0, effectSpawner.ShowJumpEffect);
-                        }
-                        else if (IsKeyJustPressed(KeyType.JumpLeft))
-                            playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
-                        else if (IsKeyJustPressed(KeyType.JumpRight))
-                            playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
-                    }
-                }
-            }
+            //        if (playerController.IsGrounded())
+            //        {
+            //            if (IsKeyJustPressed(KeyType.Down))
+            //            {
+            //                if (Time.fixedTime < downJumpTimeLimit)
+            //                {
+            //                    playerController.DownJump();
+            //                    downJumpTimeLimit = 0f;
+            //                }
+            //                else
+            //                {
+            //                    downJumpTimeLimit = Time.fixedTime + 0.2f;
+            //                }
+            //            }
+            //            if (IsKeyPressed(KeyType.JumpLeft))
+            //                playerController.Jump(-1f);
+            //            else if (IsKeyPressed(KeyType.JumpRight))
+            //                playerController.Jump(1f);
+            //            else if (IsKeyPressed(KeyType.Jump))
+            //                playerController.Jump(0f);
+            //        }
+            //        else
+            //        {
+            //            if (IsKeyJustPressed(KeyType.Jump))
+            //            {
+            //                if (IsKeyPressed(KeyType.MoveLeft))
+            //                    playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
+            //                else if (IsKeyPressed(KeyType.MoveRight))
+            //                    playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
+            //                else
+            //                    playerController.DoubleJump(0, effectSpawner.ShowJumpEffect);
+            //            }
+            //            else if (IsKeyJustPressed(KeyType.JumpLeft))
+            //                playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
+            //            else if (IsKeyJustPressed(KeyType.JumpRight))
+            //                playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
+            //        }
+            //    }
+            //}
 
-            keyJustPressed.Clear();
+            //keyJustPressed.Clear();
         }
 
         private void Update()
@@ -141,9 +144,57 @@ namespace GameE
             }
         }
 
+        public bool IsPlayerAttackMotionEnd()
+        {
+            return Time.time > attackMotionEnd;
+        }
+
+        public bool IsPlayerGrounded()
+        {
+            return playerController.IsGrounded();
+        }
+
+        public void PlayerAttack()
+        {
+            attackMotionEnd = Time.time + attackCoolTime;
+            playerController.Attack();
+            StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
+        }
+
+        public void PlayerMove(float inputX)
+        {
+            playerController.MoveX(inputX);
+        }
+
+        public void PlayerDownJump()
+        {
+            if (IsPlayerGrounded())
+            {
+                if (Time.fixedTime < downJumpTimeLimit)
+                {
+                    playerController.DownJump();
+                    downJumpTimeLimit = 0f;
+                }
+                else
+                {
+                    downJumpTimeLimit = Time.fixedTime + 0.2f;
+                }
+            }
+        }
+
+        public void PlayerJump(float inputX)
+        {
+            playerController.Jump(inputX);
+        }
+
+        public void PlayerDoubleJump(float inputX)
+        {
+            playerController.DoubleJump(inputX, effectSpawner.ShowJumpEffect);
+        }
+
         IEnumerator PlayerAttackCo(bool isLeft)
         {
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(attackDamageDelay);
             effectSpawner.ShowAttackEffect(playerController.transform.position, isLeft);
 
             var attackRangePosition = GetAttackRangePosition(playerController.transform.position, attackRangeOffset, isLeft);

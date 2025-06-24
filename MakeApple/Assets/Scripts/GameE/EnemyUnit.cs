@@ -7,6 +7,7 @@ namespace GameE
     public class EnemyUnit : MonoBehaviour
     {
         public Rigidbody2D rigid;
+        public GameObject root;
 
         public float knockbackPower;
         public float knockbackTime;
@@ -68,10 +69,20 @@ namespace GameE
 
         void Flip(float inputX)
         {
-            if (inputX < 0f)
-                transform.localRotation = Quaternion.Euler(transform.rotation.x, 0f, transform.rotation.z);
-            else if (inputX > 0f)
-                transform.localRotation = Quaternion.Euler(transform.rotation.x, 180f, transform.rotation.z);
+            if (root != null)
+            {
+                var localScale = root.transform.localScale;
+                if (inputX < 0)
+                    localScale.x = Mathf.Abs(localScale.x);
+                else
+                    localScale.x = Mathf.Abs(localScale.x) * -1f;
+                root.transform.localScale = localScale;
+            }
+            
+            //if (inputX < 0f)
+            //    transform.localRotation = Quaternion.Euler(transform.rotation.x, 0f, transform.rotation.z);
+            //else if (inputX > 0f)
+            //    transform.localRotation = Quaternion.Euler(transform.rotation.x, 180f, transform.rotation.z);
         }
     }
 }

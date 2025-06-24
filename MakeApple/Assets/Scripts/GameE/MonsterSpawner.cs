@@ -18,7 +18,7 @@ namespace GameE
 
         public void Spawn(int id)
         {
-            var pos = new Vector2(Random.Range(-10f, 10f), 0.5f);
+            var pos = new Vector2(Random.Range(-10f, 10f), 1f);
             var monster = monsterPool.Count > 0 ? monsterPool.Pop() : Instantiate(monsterPrefab);
             monster.transform.position = pos;
             monster.gameObject.SetActive(true);

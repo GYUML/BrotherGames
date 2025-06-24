@@ -15,6 +15,7 @@ namespace GameE
         public EventButton attackKey;
 
         public GameLogic2 gameLogic;
+        public InputManager inputManager;
 
         public bool useKeyBoard;
 
@@ -24,20 +25,20 @@ namespace GameE
             useKeyBoard = true;
 #endif
 
-            leftKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.MoveLeft, true));
-            leftKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.MoveLeft, false));
-            rightKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.MoveRight, true));
-            rightKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.MoveRight, false));
-            upKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.Jump, true));
-            upKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.Jump, false));
-            downKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.Down, true));
-            downKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.Down, false));
-            leftJumpKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.JumpLeft, true));
-            leftJumpKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.JumpLeft, false));
-            rightJumpKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.JumpRight, true));
-            rightJumpKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.JumpRight, false));
-            attackKey.onDown.AddListener(() => gameLogic.SetKeyDown(KeyType.Attack, true));
-            attackKey.onUp.AddListener(() => gameLogic.SetKeyDown(KeyType.Attack, false));
+            leftKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.MoveLeft, true));
+            leftKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.MoveLeft, false));
+            rightKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.MoveRight, true));
+            rightKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.MoveRight, false));
+            upKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.Jump, true));
+            upKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.Jump, false));
+            downKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.Down, true));
+            downKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.Down, false));
+            leftJumpKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.JumpLeft, true));
+            leftJumpKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.JumpLeft, false));
+            rightJumpKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.JumpRight, true));
+            rightJumpKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.JumpRight, false));
+            attackKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.Attack, true));
+            attackKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.Attack, false));
         }
 
         private void Update()
@@ -46,32 +47,21 @@ namespace GameE
             if (useKeyBoard)
             {
                 if (Input.GetKeyDown(KeyCode.LeftArrow))
-                    gameLogic.SetKeyDown(KeyType.MoveLeft, true);
+                    inputManager.SetKeyDown(KeyType.MoveLeft, true);
                 if (Input.GetKeyUp(KeyCode.LeftArrow))
-                    gameLogic.SetKeyDown(KeyType.MoveLeft, false);
+                    inputManager.SetKeyDown(KeyType.MoveLeft, false);
                 if (Input.GetKeyDown(KeyCode.RightArrow))
-                    gameLogic.SetKeyDown(KeyType.MoveRight, true);
+                    inputManager.SetKeyDown(KeyType.MoveRight, true);
                 if (Input.GetKeyUp(KeyCode.RightArrow))
-                    gameLogic.SetKeyDown(KeyType.MoveRight, false);
+                    inputManager.SetKeyDown(KeyType.MoveRight, false);
                 if (Input.GetKeyDown(KeyCode.LeftAlt))
-                {
-                    if (Input.GetKey(KeyCode.LeftArrow))
-                        gameLogic.SetKeyDown(KeyType.JumpLeft, true);
-                    else if (Input.GetKey(KeyCode.RightArrow))
-                        gameLogic.SetKeyDown(KeyType.JumpRight, true);
-                    else
-                        gameLogic.SetKeyDown(KeyType.Jump, true);
-                }
+                    inputManager.SetKeyDown(KeyType.Jump, true);
                 if (Input.GetKeyUp(KeyCode.LeftAlt))
-                {
-                    gameLogic.SetKeyDown(KeyType.Jump, false);
-                    gameLogic.SetKeyDown(KeyType.JumpLeft, false);
-                    gameLogic.SetKeyDown(KeyType.JumpRight, false);
-                }
+                    inputManager.SetKeyDown(KeyType.Jump, false);
                 if (Input.GetKeyDown(KeyCode.LeftShift))
-                    gameLogic.SetKeyDown(KeyType.Attack, true);
+                    inputManager.SetKeyDown(KeyType.Attack, true);
                 if (Input.GetKeyUp(KeyCode.LeftShift))
-                    gameLogic.SetKeyDown(KeyType.Attack, false);
+                    inputManager.SetKeyDown(KeyType.Attack, false);
             }
 #endif
         }

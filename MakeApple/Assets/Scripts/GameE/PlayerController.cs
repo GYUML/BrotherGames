@@ -17,7 +17,7 @@ namespace GameE
         public Animator playerAnim;
 
         public float moveSpeed;
-        public int maxJumpCount = 2;
+        public int maxDoubleJumpCount = 2;
         public float jumpPower = 4f;
         public float doubleJumpPower = 1.5f;
 
@@ -25,7 +25,7 @@ namespace GameE
         bool isHangOn;
         float jumpingMoveX;
         bool isLeft;
-        int nowJumpCount;
+        int nowDoubleJumpCount;
         Collider2D nowGroundCol;
         Collider2D ignoreGroundCol;
 
@@ -55,7 +55,7 @@ namespace GameE
             if (IsGrounded())
             {
                 jumpingMoveX = 0f;
-                nowJumpCount = 0;
+                nowDoubleJumpCount = 0;
             }
             else
                 JumpMoveX();
@@ -70,14 +70,14 @@ namespace GameE
 
         public void MoveX(float inputX)
         {
-            if (jumpingMoveX != 0f)
+            if (!IsGrounded())
             {
-                if (inputX * jumpingMoveX >= 0f)
+                if (jumpingMoveX != 0 && inputX * jumpingMoveX >= 0f)
                     return;
                 else
-                    jumpingMoveX = 0f;
+                    jumpingMoveX = inputX * moveSpeed;
             }
-
+            
             playerRb.linearVelocityX = Mathf.Clamp(inputX, -1f, 1f) * moveSpeed;
             Flip(inputX);
             playerAnim.SetBool("1_Move", inputX != 0f);
@@ -87,7 +87,6 @@ namespace GameE
         {
             if (IsGrounded())
             {
-                nowJumpCount++;
                 jumpingMoveX = Mathf.Clamp(inputX, -1f, 1f) * moveSpeed;
                 AddForceUp(jumpPower);
             }
@@ -95,13 +94,13 @@ namespace GameE
 
         public void DoubleJump(float inputX, Action<Vector2, bool> onJump = null)
         {
-            if (!IsGrounded() && nowJumpCount < maxJumpCount)
+            if (!IsGrounded() && nowDoubleJumpCount < maxDoubleJumpCount)
             {
-                nowJumpCount++;
+                nowDoubleJumpCount++;
 
                 if (inputX == 0)
                 {
-                    if (jumpingMoveX != 0f || nowJumpCount > 2)
+                    if (jumpingMoveX != 0f || nowDoubleJumpCount > 2)
                         AddForceUp(doubleJumpPower);
                     else
                         AddForceUp(doubleJumpPower * 2f);
