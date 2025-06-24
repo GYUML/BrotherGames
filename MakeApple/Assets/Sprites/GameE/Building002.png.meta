@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0803abaa2cc8d3d4cbce422a29e432c9
+guid: 3f21b54e7b76e0241a56d4c980624ee8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6165436520810551753
-    second: JumpEffect001_0
+      213: 8586796049768682099
+    second: Building002_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -72,7 +72,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 512
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: JumpEffect001_0
+      name: Building002_0
       rect:
         serializedVersion: 2
-        x: 9
-        y: 11
-        width: 46
-        height: 36
+        x: 90
+        y: 77
+        width: 385
+        height: 341
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9c9122c89d7009550800000000000000
-      internalID: 6165436520810551753
+      spriteID: 3729031338d6a2770800000000000000
+      internalID: 8586796049768682099
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      JumpEffect001_0: 6165436520810551753
+      Building002_0: 8586796049768682099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
