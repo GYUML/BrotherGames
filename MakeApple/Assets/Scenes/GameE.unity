@@ -9123,7 +9123,7 @@ MonoBehaviour:
   playerCol: {fileID: 1227314730}
   playerAnim: {fileID: 4551161809389783026}
   moveSpeed: 3.5
-  maxJumpCount: 3
+  maxDoubleJumpCount: 2
   jumpPower: 10
   doubleJumpPower: 5
 --- !u!1001 &1292319502
@@ -10615,6 +10615,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameLogic: {fileID: 1610628091}
+  playerController: {fileID: 1227314731}
+  effectSpawner: {fileID: 1610628092}
 --- !u!1 &1611446688
 GameObject:
   m_ObjectHideFlags: 0

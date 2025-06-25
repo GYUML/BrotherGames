@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace GameE
 {
     public class InputManager : MonoBehaviour
     {
         public GameLogic2 gameLogic;
+        public PlayerController playerController;
+        public EffectSpawner effectSpawner;
 
         HashSet<KeyType> keyPressed = new HashSet<KeyType>();
         HashSet<KeyType> keyJustPressed = new HashSet<KeyType>();
@@ -22,42 +23,42 @@ namespace GameE
                 else
                 {
                     var inputX = IsKeyPressed(KeyType.MoveLeft) ? -1f : IsKeyPressed(KeyType.MoveRight) ? 1f : 0f;
-                    gameLogic.PlayerMove(inputX);
+                    playerController.MoveX(inputX);
 
-                    if (gameLogic.IsPlayerGrounded())
+                    if (playerController.IsGrounded())
                     {
                         if (IsKeyJustPressed(KeyType.Down))
-                            gameLogic.PlayerDownJump();
+                            playerController.DownJump();
 
                         if (IsKeyPressed(KeyType.Jump))
                         {
                             if (IsKeyPressed(KeyType.MoveLeft))
-                                gameLogic.PlayerJump(-1f);
+                                playerController.Jump(-1f);
                             else if (IsKeyPressed(KeyType.MoveRight))
-                                gameLogic.PlayerJump(1f);
+                                playerController.Jump(1f);
                             else
-                                gameLogic.PlayerJump(0f);
+                                playerController.Jump(0f);
                         }
                         else if (IsKeyPressed(KeyType.JumpLeft))
-                            gameLogic.PlayerJump(-1f);
+                            playerController.Jump(-1f);
                         else if (IsKeyPressed(KeyType.JumpRight))
-                            gameLogic.PlayerJump(1f);
+                            playerController.Jump(1f);
                     }
                     else
                     {
                         if (IsKeyJustPressed(KeyType.Jump))
                         {
                             if (IsKeyPressed(KeyType.MoveLeft))
-                                gameLogic.PlayerDoubleJump(-1f);
+                                playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
                             else if (IsKeyPressed(KeyType.MoveRight))
-                                gameLogic.PlayerDoubleJump(1f);
+                                playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
                             else
-                                gameLogic.PlayerDoubleJump(0f);
+                                playerController.DoubleJump(0f, effectSpawner.ShowJumpEffect);
                         }
                         else if (IsKeyJustPressed(KeyType.JumpLeft))
-                            gameLogic.PlayerDoubleJump(-1f);
+                            playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
                         else if (IsKeyJustPressed(KeyType.JumpRight))
-                            gameLogic.PlayerDoubleJump(1f);
+                            playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
                     }
                 }
             }
