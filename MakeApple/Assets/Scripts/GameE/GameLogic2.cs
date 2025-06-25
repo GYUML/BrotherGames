@@ -28,9 +28,6 @@ namespace GameE
         float attackMotionEnd;
         float downJumpTimeLimit;
 
-        HashSet<KeyType> keyPressed = new HashSet<KeyType>();
-        HashSet<KeyType> keyJustPressed = new HashSet<KeyType>();
-
         public float respawnDelay;
         public int maxSpawnCount;
 
@@ -48,64 +45,6 @@ namespace GameE
             AddExp(0);
         }
 
-        private void FixedUpdate()
-        {
-            //if (Time.time > attackMotionEnd)
-            //{
-            //    if (IsKeyPressed(KeyType.Attack))
-            //    {
-            //        attackMotionEnd = Time.time + attackCoolTime;
-            //        playerController.Attack();
-            //        StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
-            //    }
-            //    else
-            //    {
-            //        var inputX = IsKeyPressed(KeyType.MoveLeft) ? -1f : IsKeyPressed(KeyType.MoveRight) ? 1f : 0f;
-            //        playerController.MoveX(inputX);
-
-            //        if (playerController.IsGrounded())
-            //        {
-            //            if (IsKeyJustPressed(KeyType.Down))
-            //            {
-            //                if (Time.fixedTime < downJumpTimeLimit)
-            //                {
-            //                    playerController.DownJump();
-            //                    downJumpTimeLimit = 0f;
-            //                }
-            //                else
-            //                {
-            //                    downJumpTimeLimit = Time.fixedTime + 0.2f;
-            //                }
-            //            }
-            //            if (IsKeyPressed(KeyType.JumpLeft))
-            //                playerController.Jump(-1f);
-            //            else if (IsKeyPressed(KeyType.JumpRight))
-            //                playerController.Jump(1f);
-            //            else if (IsKeyPressed(KeyType.Jump))
-            //                playerController.Jump(0f);
-            //        }
-            //        else
-            //        {
-            //            if (IsKeyJustPressed(KeyType.Jump))
-            //            {
-            //                if (IsKeyPressed(KeyType.MoveLeft))
-            //                    playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
-            //                else if (IsKeyPressed(KeyType.MoveRight))
-            //                    playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
-            //                else
-            //                    playerController.DoubleJump(0, effectSpawner.ShowJumpEffect);
-            //            }
-            //            else if (IsKeyJustPressed(KeyType.JumpLeft))
-            //                playerController.DoubleJump(-1f, effectSpawner.ShowJumpEffect);
-            //            else if (IsKeyJustPressed(KeyType.JumpRight))
-            //                playerController.DoubleJump(1f, effectSpawner.ShowJumpEffect);
-            //        }
-            //    }
-            //}
-
-            //keyJustPressed.Clear();
-        }
-
         private void Update()
         {
             if (Time.time > respawnTime)
@@ -119,28 +58,6 @@ namespace GameE
                 }
 
                 respawnTime = Time.time + respawnDelay;
-            }
-        }
-
-        public void SetKeyDown(KeyType keyType, bool keyDown)
-        {
-            if (keyDown)
-            {
-                if (keyType == KeyType.MoveLeft)
-                    keyPressed.Remove(KeyType.MoveRight);
-                else if (keyType == KeyType.MoveRight)
-                    keyPressed.Remove(KeyType.MoveLeft);
-                else if (keyType == KeyType.JumpLeft)
-                    keyPressed.Remove(KeyType.JumpRight);
-                else if (keyType == KeyType.JumpRight)
-                    keyPressed.Remove(KeyType.JumpLeft);
-
-                keyPressed.Add(keyType);
-                keyJustPressed.Add(keyType);
-            }
-            else
-            {
-                keyPressed.Remove(keyType);
             }
         }
 
@@ -168,18 +85,7 @@ namespace GameE
 
         public void PlayerDownJump()
         {
-            if (IsPlayerGrounded())
-            {
-                if (Time.fixedTime < downJumpTimeLimit)
-                {
-                    playerController.DownJump();
-                    downJumpTimeLimit = 0f;
-                }
-                else
-                {
-                    downJumpTimeLimit = Time.fixedTime + 0.2f;
-                }
-            }
+            playerController.DownJump();
         }
 
         public void PlayerJump(float inputX)
@@ -222,16 +128,6 @@ namespace GameE
         {
             if (isLeft) offset.x = -offset.x;
             return position + (Vector3)offset;
-        }
-
-        bool IsKeyPressed(KeyType keyType)
-        {
-            return keyPressed.Contains(keyType);
-        }
-
-        bool IsKeyJustPressed(KeyType keyType)
-        {
-            return keyJustPressed.Contains(keyType);
         }
 
         void AttackMonster(int monsterId)

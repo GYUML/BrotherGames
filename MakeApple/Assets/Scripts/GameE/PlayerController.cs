@@ -26,6 +26,8 @@ namespace GameE
         float jumpingMoveX;
         bool isLeft;
         int nowDoubleJumpCount;
+        float downJumpTimeLimit;
+
         Collider2D nowGroundCol;
         Collider2D ignoreGroundCol;
 
@@ -48,7 +50,7 @@ namespace GameE
                 {
                     nowGroundCol = Physics2D.OverlapBox(transform.TransformPoint(groundCheckPoint), transform.lossyScale * groundCheckSize, 0f, groundLayer);
                     if (nowGroundCol != ignoreGroundCol)
-                        isGrounded = nowGroundCol != null;// && transform.position.y > nowGroundCol.bounds.center.y;
+                        isGrounded = nowGroundCol != null;
                 }
             }
             
@@ -100,7 +102,7 @@ namespace GameE
 
                 if (inputX == 0)
                 {
-                    if (jumpingMoveX != 0f || nowDoubleJumpCount > 2)
+                    if (jumpingMoveX != 0f || nowDoubleJumpCount > 1)
                         AddForceUp(doubleJumpPower);
                     else
                         AddForceUp(doubleJumpPower * 2f);
@@ -117,26 +119,40 @@ namespace GameE
 
         public void DownJump()
         {
-            var rayHits = Physics2D.RaycastAll(playerRb.position, Vector2.down, 4f, groundLayer);
-            var groundCount = 0;
-
-            if (rayHits.Length > 0)
+            if (IsGrounded())
             {
-                foreach (var rayHit in rayHits)
+                if (Time.fixedTime < downJumpTimeLimit)
                 {
-                    var tileMap = rayHit.collider.GetComponent<Tilemap>();
-                    if (tileMap != null)
-                    {
-                        var underneathCount = GameUtil.GetTilesUnderneathCount(tileMap, transform.position, 10);
-                        groundCount += underneathCount;
-                    }
+                    if (GetUnderGroundCount() > 1)
+                        StartCoroutine(IgnoreColliderCo());
+
+                    downJumpTimeLimit = 0f;
+                }
+                else
+                {
+                    downJumpTimeLimit = Time.fixedTime + 0.2f;
                 }
             }
 
-            if (groundCount > 1)
+            int GetUnderGroundCount()
             {
-                Debug.Log("DownJump");
-                StartCoroutine(IgnoreColliderCo());
+                var rayHits = Physics2D.RaycastAll(playerRb.position, Vector2.down, 4f, groundLayer);
+                var groundCount = 0;
+
+                if (rayHits.Length > 0)
+                {
+                    foreach (var rayHit in rayHits)
+                    {
+                        var tileMap = rayHit.collider.GetComponent<Tilemap>();
+                        if (tileMap != null)
+                        {
+                            var underneathCount = GameUtil.GetTilesUnderneathCount(tileMap, transform.position, 10);
+                            groundCount += underneathCount;
+                        }
+                    }
+                }
+
+                return groundCount;
             }
 
             IEnumerator IgnoreColliderCo()
