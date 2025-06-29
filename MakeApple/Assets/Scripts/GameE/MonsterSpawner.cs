@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -38,6 +39,13 @@ namespace GameE
             {
                 Debug.LogError($"OnDeadMonster() Failed to find Monster. id={id}");
             }
+        }
+
+        public void DespawnAll()
+        {
+            var allIdList = monsterDic.Keys.ToList();
+            foreach (var id in allIdList)
+                Despawn(id);
         }
 
         public bool TryGetMonster(int id, out EnemyUnit monster)

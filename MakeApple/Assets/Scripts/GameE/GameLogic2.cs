@@ -11,12 +11,14 @@ namespace GameE
     {
         public HudLayout hudLayout;
         public StateLayout stateLayout;
+        public List<GameObject> mapList;
 
         public PlayerController playerController;
 
         public EffectSpawner effectSpawner;
         public DropItemSpawner dropItemSpawner;
         public MonsterSpawner monsterSpawner;
+        public MapContentSpawner mapContentSpawner;
 
         public Vector2 attackRangeSize;
         public Vector2 attackRangeOffset;
@@ -26,7 +28,6 @@ namespace GameE
         public float attackDamageDelay = 0.2f;
 
         float attackMotionEnd;
-        float downJumpTimeLimit;
 
         public float respawnDelay;
         public int maxSpawnCount;
@@ -43,6 +44,7 @@ namespace GameE
             playerData = new PlayerData();
 
             AddExp(0);
+            MoveMap(1);
         }
 
         private void Update()
@@ -61,14 +63,27 @@ namespace GameE
             }
         }
 
+        public void MoveMap(int mapId)
+        {
+            Debug.Log($"Move Map id={mapId}");
+
+            fieldData.ClearField();
+            maxSpawnCount = 0;
+
+            mapContentSpawner.MoveMap(mapId, () =>
+            {
+                if (mapId == 1)
+                    maxSpawnCount = 0;
+                else if (mapId == 2)
+                    maxSpawnCount = 10;
+
+                respawnTime = 0;
+            });
+        }
+
         public bool IsPlayerAttackMotionEnd()
         {
             return Time.time > attackMotionEnd;
-        }
-
-        public bool IsPlayerGrounded()
-        {
-            return playerController.IsGrounded();
         }
 
         public void PlayerAttack()
@@ -76,26 +91,6 @@ namespace GameE
             attackMotionEnd = Time.time + attackCoolTime;
             playerController.Attack();
             StartCoroutine(PlayerAttackCo(playerController.IsLeft()));
-        }
-
-        public void PlayerMove(float inputX)
-        {
-            playerController.MoveX(inputX);
-        }
-
-        public void PlayerDownJump()
-        {
-            playerController.DownJump();
-        }
-
-        public void PlayerJump(float inputX)
-        {
-            playerController.Jump(inputX);
-        }
-
-        public void PlayerDoubleJump(float inputX)
-        {
-            playerController.DoubleJump(inputX, effectSpawner.ShowJumpEffect);
         }
 
         IEnumerator PlayerAttackCo(bool isLeft)
@@ -250,6 +245,11 @@ namespace GameE
             return monsters.Count;
         }
 
+        public void ClearField()
+        {
+            monsters.Clear();
+        }
+
         bool TryGetMonster(int id, out Monster monster)
         {
             foreach (var now in monsters)
@@ -315,6 +315,16 @@ namespace GameE
         }
     }
     
+    public class MapInfo
+    {
+        public int maxMonsterCount;
+        public int monsterCode;
+        public Vector2 minMonsterSpawnPos;
+        public Vector2 maxMonsterSpawnPos;
+        List<(int prevPortalId, Vector2 spawnPos)> spawnPosList;
+        List<(int portalId, Vector2 portalPos, int moveMapId)> portalInfos;
+    }
+
     public enum KeyType
     {
         None,

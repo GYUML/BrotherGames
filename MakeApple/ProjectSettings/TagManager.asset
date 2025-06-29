@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PlayerBonus
   - PlayerAttack
+  - GroundCheck
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - Monster
   - DropItem
   - PlayerTrigger
-  - 
+  - Lever
   - 
   - 
   - 

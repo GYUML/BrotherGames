@@ -88,12 +88,12 @@ namespace GameE
             }
         }
 
-        bool IsKeyPressed(KeyType keyType)
+        public bool IsKeyPressed(KeyType keyType)
         {
             return keyPressed.Contains(keyType);
         }
 
-        bool IsKeyJustPressed(KeyType keyType)
+        public bool IsKeyJustPressed(KeyType keyType)
         {
             return keyJustPressed.Contains(keyType);
         }

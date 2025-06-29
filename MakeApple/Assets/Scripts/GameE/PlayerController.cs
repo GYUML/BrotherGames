@@ -190,6 +190,13 @@ namespace GameE
             return isHangOn;
         }
 
+        public void Respawn()
+        {
+            playerRb.linearVelocity = Vector2.zero;
+            jumpingMoveX = 0f;
+            nowDoubleJumpCount = 0;
+        }
+
         void AddForceUp(float jumpPower)
         {
             playerRb.linearVelocityY = 0f;
