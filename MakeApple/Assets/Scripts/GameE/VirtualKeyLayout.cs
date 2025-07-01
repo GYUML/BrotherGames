@@ -16,6 +16,7 @@ namespace GameE
 
         public GameLogic2 gameLogic;
         public InputManager inputManager;
+        public MapContentSpawner mapContentSpawner;
 
         public bool useKeyBoard;
 
@@ -29,8 +30,18 @@ namespace GameE
             leftKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.MoveLeft, false));
             rightKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.MoveRight, true));
             rightKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.MoveRight, false));
-            upKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.Jump, true));
-            upKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.Jump, false));
+            upKey.onDown.AddListener(() =>
+            {
+                if (mapContentSpawner.IsOnPortal())
+                    inputManager.SetKeyDown(KeyType.TakePortal, true);
+                else
+                    inputManager.SetKeyDown(KeyType.Jump, true);
+            });
+            upKey.onUp.AddListener(() =>
+            {
+                inputManager.SetKeyDown(KeyType.TakePortal, false);
+                inputManager.SetKeyDown(KeyType.Jump, false);
+            });
             downKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.Down, true));
             downKey.onUp.AddListener(() => inputManager.SetKeyDown(KeyType.Down, false));
             leftJumpKey.onDown.AddListener(() => inputManager.SetKeyDown(KeyType.JumpLeft, true));
@@ -62,6 +73,10 @@ namespace GameE
                     inputManager.SetKeyDown(KeyType.Attack, true);
                 if (Input.GetKeyUp(KeyCode.LeftShift))
                     inputManager.SetKeyDown(KeyType.Attack, false);
+                if (Input.GetKeyDown(KeyCode.UpArrow))
+                    inputManager.SetKeyDown(KeyType.TakePortal, true);
+                if (Input.GetKeyUp(KeyCode.UpArrow))
+                    inputManager.SetKeyDown(KeyType.TakePortal, false);
             }
 #endif
         }

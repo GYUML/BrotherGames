@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.SceneView;
 
 namespace GameE
 {
@@ -10,6 +11,7 @@ namespace GameE
     {
         public GameLogic2 gameLogic;
         public MonsterSpawner monsterSpawner;
+        public CameraMover cameraMover;
 
         public List<GameObject> mapList;
         public PlayerController playerController;
@@ -20,6 +22,21 @@ namespace GameE
         List<BaseLever> portalSpawned = new List<BaseLever>();
 
         int nowMapId;
+
+        int nowPortalMapId;
+
+        public void TakePortal()
+        {
+            if (nowPortalMapId != -1)
+            {
+                gameLogic.MoveMap(nowPortalMapId);
+            }
+        }
+
+        public bool IsOnPortal()
+        {
+            return nowPortalMapId != -1;
+        }
 
         public void MoveMap(int mapId, Action onCompleteLoad)
         {
@@ -42,6 +59,7 @@ namespace GameE
             yield return new WaitForFixedUpdate();
 
             SetPlayer(mapId, nowMapId);
+            cameraMover.MoveToTarget();
 
             onCompleteLoad?.Invoke();
 
@@ -108,8 +126,15 @@ namespace GameE
             {
                 if (col.CompareTag("Player"))
                 {
-                    gameLogic.MoveMap(moveMapId);
+                    nowPortalMapId = moveMapId;
                 }   
+            });
+            portal.SetTriggerExit((col) =>
+            {
+                if (col.CompareTag("Player"))
+                {
+                    nowPortalMapId = -1;
+                }
             });
         }
 

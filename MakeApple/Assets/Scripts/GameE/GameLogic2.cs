@@ -34,6 +34,8 @@ namespace GameE
 
         float respawnTime;
 
+        int nowPortalId;
+
         FieldData fieldData;
         PlayerData playerData;
 
@@ -334,6 +336,7 @@ namespace GameE
         Jump,
         JumpLeft,
         JumpRight,
-        Attack
+        Attack,
+        TakePortal,
     }
 }

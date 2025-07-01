@@ -8,6 +8,7 @@ namespace GameE
         public GameLogic2 gameLogic;
         public PlayerController playerController;
         public EffectSpawner effectSpawner;
+        public MapContentSpawner mapContentSpawner;
 
         HashSet<KeyType> keyPressed = new HashSet<KeyType>();
         HashSet<KeyType> keyJustPressed = new HashSet<KeyType>();
@@ -29,6 +30,9 @@ namespace GameE
                     {
                         if (IsKeyJustPressed(KeyType.Down))
                             playerController.DownJump();
+
+                        if (IsKeyJustPressed(KeyType.TakePortal))
+                            mapContentSpawner.TakePortal();
 
                         if (IsKeyPressed(KeyType.Jump))
                         {
