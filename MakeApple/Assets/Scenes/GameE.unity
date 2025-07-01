@@ -15212,6 +15212,7 @@ MonoBehaviour:
   attackKey: {fileID: 792836617}
   gameLogic: {fileID: 1610628091}
   inputManager: {fileID: 1610628095}
+  mapContentSpawner: {fileID: 1610628096}
   useKeyBoard: 0
 --- !u!1 &1378722589
 GameObject:
@@ -18974,6 +18975,7 @@ MonoBehaviour:
   gameLogic: {fileID: 1610628091}
   playerController: {fileID: 1227314731}
   effectSpawner: {fileID: 1610628092}
+  mapContentSpawner: {fileID: 1610628096}
 --- !u!114 &1610628096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18988,6 +18990,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameLogic: {fileID: 1610628091}
   monsterSpawner: {fileID: 1610628094}
+  cameraMover: {fileID: 943852234}
   mapList:
   - {fileID: 1431272660}
   - {fileID: 1431272660}
