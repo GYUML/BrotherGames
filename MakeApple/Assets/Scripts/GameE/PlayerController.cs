@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.Windows;
 
 namespace GameE
 {
@@ -15,6 +14,7 @@ namespace GameE
         public Rigidbody2D playerRb;
         public Collider2D playerCol;
         public Animator playerAnim;
+        public BaseHitBox hitBox;
 
         public float moveSpeed;
         public int maxDoubleJumpCount = 2;
@@ -27,15 +27,19 @@ namespace GameE
         bool isLeft;
         int nowDoubleJumpCount;
         float downJumpTimeLimit;
+        float stunEndTime;
+        float stunIgnoreEnd;
 
         Collider2D nowGroundCol;
         Collider2D ignoreGroundCol;
 
         readonly float LinearVelocityThreshHold = 0.01f;
+        readonly float StunIgnoreTime = 0.5f;
 
         private void Start()
         {
             groundLayer = LayerMask.GetMask("Ground");
+            hitBox.SetOnAttackedEvent(OnAttacked);
         }
 
         private void FixedUpdate()
@@ -53,14 +57,19 @@ namespace GameE
                         isGrounded = nowGroundCol != null;
                 }
             }
-            
-            if (IsGrounded())
+
+            if (Time.time > stunEndTime)
             {
-                jumpingMoveX = 0f;
-                nowDoubleJumpCount = 0;
-            }
-            else
-                JumpMoveX();
+                if (IsGrounded())
+                {
+                    jumpingMoveX = 0f;
+                    nowDoubleJumpCount = 0;
+                }
+                else
+                {
+                    JumpMoveX();
+                }
+            }   
         }
 
         void OnDrawGizmosSelected()
@@ -72,6 +81,9 @@ namespace GameE
 
         public void MoveX(float inputX)
         {
+            if (Time.time < stunEndTime)
+                return;
+
             if (!IsGrounded())
             {
                 if (jumpingMoveX != 0 && inputX * jumpingMoveX >= 0f)
@@ -79,7 +91,7 @@ namespace GameE
                 else
                     jumpingMoveX = inputX * moveSpeed;
             }
-            
+
             playerRb.linearVelocityX = Mathf.Clamp(inputX, -1f, 1f) * moveSpeed;
             Flip(inputX);
             playerAnim.SetBool("1_Move", inputX != 0f);
@@ -195,6 +207,21 @@ namespace GameE
             playerRb.linearVelocity = Vector2.zero;
             jumpingMoveX = 0f;
             nowDoubleJumpCount = 0;
+        }
+
+        void OnAttacked(Vector2 direction, float stunTime)
+        {
+            Debug.Log("OnAttacked");
+
+            if (Time.time < stunIgnoreEnd)
+                return;
+
+            stunEndTime = Time.time + stunTime;
+            stunIgnoreEnd = Time.time + StunIgnoreTime;
+            jumpingMoveX = 0f;
+
+            playerRb.linearVelocity = Vector2.zero;
+            playerRb.AddForce(direction, ForceMode2D.Impulse);
         }
 
         void AddForceUp(float jumpPower)

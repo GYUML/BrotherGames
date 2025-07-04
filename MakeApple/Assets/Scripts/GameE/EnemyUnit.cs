@@ -8,11 +8,16 @@ namespace GameE
     {
         public Rigidbody2D rigid;
         public GameObject root;
+        public BaseLever attackCol;
+        public PlayerController playerController;
 
         public float knockbackPower;
         public float knockbackTime;
         public float moveSpeed;
         public float chaseError;
+
+        public Vector2 attackDirection;
+        public float stunTime;
 
         public int Id
         {
@@ -25,6 +30,24 @@ namespace GameE
         float knockbackEndTime;
         float moveEndTime;
         float nowVelocityX;
+
+        private void Start()
+        {
+            attackCol.SetTriggerEnter((col) =>
+            {
+                if (col.CompareTag("Player"))
+                {
+                    var hitBox = col.GetComponent<BaseHitBox>();
+                    if (hitBox != null)
+                    {
+                        if (transform.position.x < playerController.transform.position.x)
+                            hitBox.OnAttacked(attackDirection, stunTime);
+                        else
+                            hitBox.OnAttacked(attackDirection * new Vector2(-1, 1), stunTime);
+                    }
+                }
+            });
+        }
 
         public void Init(int id)
         {
@@ -78,11 +101,6 @@ namespace GameE
                     localScale.x = Mathf.Abs(localScale.x) * -1f;
                 root.transform.localScale = localScale;
             }
-            
-            //if (inputX < 0f)
-            //    transform.localRotation = Quaternion.Euler(transform.rotation.x, 0f, transform.rotation.z);
-            //else if (inputX > 0f)
-            //    transform.localRotation = Quaternion.Euler(transform.rotation.x, 180f, transform.rotation.z);
         }
     }
 }
