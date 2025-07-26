@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +7,7 @@ public class GameLayout : MonoBehaviour
     public EventButton chargeButton;
     public GuageBar chargeGuage;
     public FieldSpawner fieldSpawner;
+    public GameObject diceScreen;
 
     public float maxChargeTime;
 
@@ -20,6 +22,7 @@ public class GameLayout : MonoBehaviour
     {
         chargeButton.SetPointerDownEvent((data) => SetChargeState(true));
         chargeButton.SetPointerUpEvent((data) => SetChargeState(false));
+        diceScreen.SetActive(false);
     }
     
     void Update()
@@ -32,10 +35,7 @@ public class GameLayout : MonoBehaviour
             }
             else if (chargedTime > 0)
             {
-                fieldSpawner.RollDice(1, 1);
-                fieldSpawner.MoveFigure(nowPosition, nowPosition + 2);
-                nowPosition += 2;
-                chargedTime = 0f;
+                RollDice();
             }
             
             var caculated = chargedTime % (2 * maxChargeTime);
@@ -52,5 +52,25 @@ public class GameLayout : MonoBehaviour
     {
         isCharging = isPressed;
         chargeButton.transform.localScale = Vector3.one * (isPressed ? 0.9f : 1f);
+    }
+
+    void RollDice()
+    {
+        StartCoroutine(RollDiceCo());
+    }
+
+    IEnumerator RollDiceCo()
+    {
+        fieldSpawner.RollDice(1, 1);
+        fieldSpawner.MoveFigure(nowPosition, nowPosition + 2);
+        nowPosition += 2;
+        chargedTime = 0f;
+
+        chargeButton.enabled = false;
+        diceScreen.gameObject.SetActive(true);
+        yield return new WaitForSeconds(3f);
+
+        chargeButton.enabled = true;
+        diceScreen.gameObject.SetActive(false);
     }
 }
