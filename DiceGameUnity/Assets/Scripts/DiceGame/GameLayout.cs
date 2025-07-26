@@ -22,7 +22,6 @@ public class GameLayout : MonoBehaviour
         chargeButton.SetPointerUpEvent((data) => SetChargeState(false));
     }
     
-
     void Update()
     {
         if (maxChargeTime > 0)
@@ -33,9 +32,9 @@ public class GameLayout : MonoBehaviour
             }
             else if (chargedTime > 0)
             {
-                nowPosition += 2;
                 fieldSpawner.RollDice(1, 1);
-                fieldSpawner.MoveFigure(nowPosition);
+                fieldSpawner.MoveFigure(nowPosition, nowPosition + 2);
+                nowPosition += 2;
                 chargedTime = 0f;
             }
             

@@ -1368,6 +1368,8 @@ MonoBehaviour:
   dice1: {fileID: 408441982}
   size: {x: 11, y: 11}
   gap: 3
+  figureSpeed: 4
+  positionError: 0.0001
 --- !u!1 &1965245039
 GameObject:
   m_ObjectHideFlags: 0
