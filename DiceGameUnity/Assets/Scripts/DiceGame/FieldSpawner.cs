@@ -8,6 +8,8 @@ public class FieldSpawner : MonoBehaviour
     public GameObject coinPrefab;
     public GameObject playerFigure;
 
+    public Animator figureAnimator;
+
     public GameObject dice0;
     public GameObject dice1;
 
@@ -108,14 +110,16 @@ public class FieldSpawner : MonoBehaviour
 
     IEnumerator RollDiceCo(int number0, int number1)
     {
-        dice0.transform.position = new Vector3(11f, 2f, 11f);
-        dice1.transform.position = new Vector3(10f, 2f, 11f);
+        dice0.transform.localPosition = new Vector3(0.5f, 2f, 0f);
+        dice1.transform.localPosition = new Vector3(-0.5f, 2f, 0f);
 
         yield return new WaitForSeconds(1f);
     }
 
     IEnumerator MoveFigureCo(int from, int to)
     {
+        figureAnimator.Play("Move");
+
         if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
         {
             var fromItem = itemList[from];
@@ -138,5 +142,7 @@ public class FieldSpawner : MonoBehaviour
                 }
             }
         }
+
+        figureAnimator.Play("Idle");
     }
 }

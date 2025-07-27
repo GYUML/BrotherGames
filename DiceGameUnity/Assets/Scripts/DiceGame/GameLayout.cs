@@ -68,9 +68,13 @@ public class GameLayout : MonoBehaviour
 
         chargeButton.enabled = false;
         diceScreen.gameObject.SetActive(true);
-        yield return new WaitForSeconds(3f);
+
+        yield return new WaitForSeconds(0.5f);
+
+        diceScreen.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(2f);
 
         chargeButton.enabled = true;
-        diceScreen.gameObject.SetActive(false);
     }
 }
