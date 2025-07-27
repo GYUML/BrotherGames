@@ -28,7 +28,7 @@ public class FieldSpawner : MonoBehaviour
         coinPrefab.gameObject.SetActive(false);
 
         SpawnMap(size, gap);
-        SpawnCoin(size, gap);
+        SpawnCoinItems(size, gap);
 
         StartCoroutine(ProcCo());
     }
@@ -48,22 +48,33 @@ public class FieldSpawner : MonoBehaviour
             SpawnMapItem(mapPrefab, new Vector3(i * gap, 0f, 0f));
     }
 
-    public void SpawnCoin(Vector2Int size, float gap)
+    public void SpawnCoinItems(Vector2Int size, float gap)
     {
         for (int i = 1; i < size.y; i++)
-            SpawnMapItem(coinPrefab, new Vector3(0f, 0f, i * gap));
+            SpawnCoinItem(new Vector3(0f, 0f, i * gap));
 
         for (int i = 1; i < size.x; i++)
-            SpawnMapItem(coinPrefab, new Vector3(i * gap, 0f, size.y * gap));
+            SpawnCoinItem(new Vector3(i * gap, 0f, size.y * gap));
 
         for (int i = size.y - 1; i > 0; i--)
-            SpawnMapItem(coinPrefab, new Vector3(size.x * gap, 0f, i * gap));
+            SpawnCoinItem(new Vector3(size.x * gap, 0f, i * gap));
 
         for (int i = size.x - 1; i > 0; i--)
-            SpawnMapItem(coinPrefab, new Vector3(i * gap, 0f, 0f));
+            SpawnCoinItem(new Vector3(i * gap, 0f, 0f));
     }
 
-    public void SpawnMapItem(GameObject prefab, Vector3 position)
+    public void SpawnCoinItem(Vector3 position)
+    {
+        var coin = SpawnMapItem(coinPrefab, position);
+        var item = coin.GetComponent<DroppedItem>();
+
+        if (item != null)
+        {
+            item.SpawnItem(0, 0, Vector3.zero, (id, code, dropped) => dropped.gameObject.SetActive(false));
+        }
+    }
+
+    public GameObject SpawnMapItem(GameObject prefab, Vector3 position)
     {
         var block = Instantiate(prefab);
         block.gameObject.SetActive(true);
@@ -74,24 +85,18 @@ public class FieldSpawner : MonoBehaviour
 
         if (mapItemDic.TryGetValue(prefab.name, out var itemList))
             itemList.Add(block);
+
+        return block;
     }
 
     public void RollDice(int number0, int number1)
     {
-        //dice0.transform.position = new Vector3(11f, 2f, 11f);
-        //dice1.transform.position = new Vector3(10f, 2f, 11f);
         procedureQue.Enqueue(RollDiceCo(number0, number1));
     }
 
     public void MoveFigure(int from, int to)
     {
-        //if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
-        //{
-        //    var mapItem = itemList[position];
-        //    playerFigure.transform.position = mapItem.transform.position + new Vector3(0f, 0.5f, 0f);
-        //}
-        for (int i = from; i < to; i++)
-            procedureQue.Enqueue(MoveFigureCo(i, i + 1));
+        procedureQue.Enqueue(MoveFigureCo(from, to));
     }
 
     IEnumerator ProcCo()
@@ -108,22 +113,41 @@ public class FieldSpawner : MonoBehaviour
         }
     }
 
-    IEnumerator RollDiceCo(int number0, int number1)
-    {
-        dice0.transform.localPosition = new Vector3(0.5f, 2f, 0f);
-        dice1.transform.localPosition = new Vector3(-0.5f, 2f, 0f);
+    public float dicePower = 1f;
 
-        yield return new WaitForSeconds(1f);
+    public IEnumerator RollDiceCo(int number0, int number1)
+    {
+        var dice0Rigid = dice0.GetComponent<Rigidbody>();
+        var dice1Rigid = dice1.GetComponent<Rigidbody>();
+
+        dice0.transform.localPosition = new Vector3(0.5f, 0.9f, 0f);
+        dice1.transform.localPosition = new Vector3(-0.5f, 0.9f, 0f);
+
+        dice0Rigid.rotation = Quaternion.Euler(new Vector3(70f, 50f, 0f));
+        dice1Rigid.rotation = Quaternion.Euler(new Vector3(0f, 50f, 70f));
+
+        dice0Rigid.AddForce(Vector3.up * dicePower, ForceMode.Impulse);
+        dice1Rigid.AddForce(Vector3.up * dicePower, ForceMode.Impulse);
+
+        yield return new WaitForSeconds(2f);
     }
 
-    IEnumerator MoveFigureCo(int from, int to)
+    public IEnumerator MoveFigureCo(int from, int to)
     {
         figureAnimator.Play("Move");
 
+        for (int i = from; i < to; i++)
+            yield return MoveFigureOneCo(i);
+
+        figureAnimator.Play("Idle");
+    }
+
+    IEnumerator MoveFigureOneCo(int from)
+    {
         if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
         {
             var fromItem = itemList[from];
-            var toItem = itemList[to];
+            var toItem = itemList[from + 1];
 
             if (fromItem != null && toItem != null)
             {
@@ -134,6 +158,7 @@ public class FieldSpawner : MonoBehaviour
                 toPosition.y = playerFigure.transform.position.y;
 
                 playerFigure.transform.position = fromPosition;
+                playerFigure.transform.LookAt(toPosition);
 
                 while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
                 {
@@ -142,7 +167,5 @@ public class FieldSpawner : MonoBehaviour
                 }
             }
         }
-
-        figureAnimator.Play("Idle");
     }
 }
