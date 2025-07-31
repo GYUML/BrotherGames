@@ -39,4 +39,25 @@ public class EffectManager : MonoBehaviour
 
         effectPool[id].Enqueue(newEffect);
     }
+
+    public void ShowEffect(int id, Vector3 position, float scale, Transform parent = null)
+    {
+        GameObject newEffect;
+
+        if (id == 0)
+            return;
+
+        if (effectPool[id].Count < maxEffect)
+            newEffect = Instantiate(effects[id]);
+        else
+            newEffect = effectPool[id].Dequeue();
+
+        newEffect.transform.position = position;
+        newEffect.transform.localScale = new Vector3(scale, scale, scale);
+        newEffect.transform.SetParent(parent);
+        newEffect.SetActive(false);
+        newEffect.SetActive(true);
+
+        effectPool[id].Enqueue(newEffect);
+    }
 }

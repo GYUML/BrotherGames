@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class FieldSpawner : MonoBehaviour
 {
+    public EffectManager effectManager;
+
     public GameObject mapPrefab;
     public GameObject coinPrefab;
     public GameObject playerFigure;
@@ -13,64 +15,62 @@ public class FieldSpawner : MonoBehaviour
     public GameObject dice0;
     public GameObject dice1;
 
+    public List<GameObject> mapItemList;
+
     public Vector2Int size;
     public float gap;
 
     public float figureSpeed;
     public float positionError;
+    public float dicePower = 1f;
 
     Dictionary<string, List<GameObject>> mapItemDic = new Dictionary<string, List<GameObject>>();
-    Queue<IEnumerator> procedureQue = new Queue<IEnumerator>();
 
-    private void Start()
+    List<Vector3> tilePositions = new List<Vector3>();
+
+    private void Awake()
     {
         mapPrefab.gameObject.SetActive(false);
         coinPrefab.gameObject.SetActive(false);
 
-        SpawnMap(size, gap);
-        SpawnCoinItems(size, gap);
-
-        StartCoroutine(ProcCo());
-    }
-
-    public void SpawnMap(Vector2Int size, float gap)
-    {
+        // Make Map tile Positions
         for (int i = 0; i < size.y; i++)
-            SpawnMapItem(mapPrefab, new Vector3(0f, 0f, i * gap));
-        
+            tilePositions.Add(new Vector3(0f, 0f, i * gap));
+
         for (int i = 0; i < size.x; i++)
-            SpawnMapItem(mapPrefab, new Vector3(i * gap, 0f, size.y * gap));
-        
+            tilePositions.Add(new Vector3(i * gap, 0f, size.y * gap));
+
         for (int i = size.y; i > 0; i--)
-            SpawnMapItem(mapPrefab, new Vector3(size.x * gap, 0f, i * gap));
+            tilePositions.Add(new Vector3(size.x * gap, 0f, i * gap));
 
         for (int i = size.x; i > 0; i--)
-            SpawnMapItem(mapPrefab, new Vector3(i * gap, 0f, 0f));
+            tilePositions.Add(new Vector3(i * gap, 0f, 0f));
+
+        foreach (var position in tilePositions)
+            SpawnMapItem(mapPrefab, position);
     }
 
-    public void SpawnCoinItems(Vector2Int size, float gap)
+    public void SpawnMapItem(TileType tileType, int tileIndex)
     {
-        for (int i = 1; i < size.y; i++)
-            SpawnCoinItem(new Vector3(0f, 0f, i * gap));
+        var position = tilePositions[tileIndex];
 
-        for (int i = 1; i < size.x; i++)
-            SpawnCoinItem(new Vector3(i * gap, 0f, size.y * gap));
-
-        for (int i = size.y - 1; i > 0; i--)
-            SpawnCoinItem(new Vector3(size.x * gap, 0f, i * gap));
-
-        for (int i = size.x - 1; i > 0; i--)
-            SpawnCoinItem(new Vector3(i * gap, 0f, 0f));
-    }
-
-    public void SpawnCoinItem(Vector3 position)
-    {
-        var coin = SpawnMapItem(coinPrefab, position);
-        var item = coin.GetComponent<DroppedItem>();
-
-        if (item != null)
+        if (tileType == TileType.Coin)
         {
-            item.SpawnItem(0, 0, Vector3.zero, (id, code, dropped) => dropped.gameObject.SetActive(false));
+            var coin = SpawnMapItem(mapItemList[0], position + new Vector3(0f, 1f, 0f));
+            var item = coin.GetComponent<DroppedItem>();
+
+            if (item != null)
+            {
+                item.SpawnItem(0, 0, Vector3.zero, (id, code, dropped) =>
+                {
+                    dropped.gameObject.SetActive(false);
+                    effectManager.ShowEffect(1, dropped.transform.position);
+                });
+            }
+        }
+        else if (tileType == TileType.Enemy)
+        {
+            SpawnMapItem(mapItemList[1], position + new Vector3(0f, 1f, 0f));
         }
     }
 
@@ -89,32 +89,6 @@ public class FieldSpawner : MonoBehaviour
         return block;
     }
 
-    public void RollDice(int number0, int number1)
-    {
-        procedureQue.Enqueue(RollDiceCo(number0, number1));
-    }
-
-    public void MoveFigure(int from, int to)
-    {
-        procedureQue.Enqueue(MoveFigureCo(from, to));
-    }
-
-    IEnumerator ProcCo()
-    {
-        while (true)
-        {
-            if (procedureQue.Count > 0)
-            {
-                var nowProc = procedureQue.Dequeue();
-                yield return nowProc;
-            }
-
-            yield return null;
-        }
-    }
-
-    public float dicePower = 1f;
-
     public IEnumerator RollDiceCo(int number0, int number1)
     {
         var dice0Rigid = dice0.GetComponent<Rigidbody>();
@@ -129,17 +103,49 @@ public class FieldSpawner : MonoBehaviour
         dice0Rigid.AddForce(Vector3.up * dicePower, ForceMode.Impulse);
         dice1Rigid.AddForce(Vector3.up * dicePower, ForceMode.Impulse);
 
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
     }
 
     public IEnumerator MoveFigureCo(int from, int to)
     {
-        figureAnimator.Play("Move");
+        figureAnimator.SetBool("Move", true);
 
         for (int i = from; i < to; i++)
             yield return MoveFigureOneCo(i);
 
-        figureAnimator.Play("Idle");
+        figureAnimator.SetBool("Move", false);
+    }
+
+    public IEnumerator MoveAndKillCo(int from)
+    {
+        if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
+        {
+            var fromItem = itemList[from];
+            var toItem = itemList[from + 1];
+
+            if (fromItem != null && toItem != null)
+            {
+                var fromPosition = fromItem.transform.position;
+                var toPosition = toItem.transform.position;
+
+                fromPosition.y = playerFigure.transform.position.y;
+                toPosition.y = playerFigure.transform.position.y;
+
+                playerFigure.transform.position = fromPosition;
+                playerFigure.transform.LookAt(toPosition);
+
+                var showEffectTime = Time.time + 0.1f;
+
+                while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
+                {
+                    if (Time.time > showEffectTime)
+                        effectManager.ShowEffect(2, toPosition);
+
+                    yield return null;
+                    playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
+                }
+            }
+        }
     }
 
     IEnumerator MoveFigureOneCo(int from)
