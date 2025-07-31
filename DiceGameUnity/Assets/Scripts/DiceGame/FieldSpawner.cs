@@ -15,7 +15,7 @@ public class FieldSpawner : MonoBehaviour
     public GameObject dice0;
     public GameObject dice1;
 
-    public List<GameObject> mapItemList;
+    public List<GameObject> mapItemPrefabList;
 
     public Vector2Int size;
     public float gap;
@@ -24,7 +24,8 @@ public class FieldSpawner : MonoBehaviour
     public float positionError;
     public float dicePower = 1f;
 
-    Dictionary<string, List<GameObject>> mapItemDic = new Dictionary<string, List<GameObject>>();
+    Dictionary<string, List<GameObject>> mapItemList = new Dictionary<string, List<GameObject>>();
+    Dictionary<int, GameObject> mapItemDic = new Dictionary<int, GameObject>();
 
     List<Vector3> tilePositions = new List<Vector3>();
 
@@ -53,11 +54,14 @@ public class FieldSpawner : MonoBehaviour
     public void SpawnMapItem(TileType tileType, int tileIndex)
     {
         var position = tilePositions[tileIndex];
+        var prefabCode = tileType == TileType.Enemy ? 1 : 0;
+        var mapItem = SpawnMapItem(mapItemPrefabList[prefabCode], position + new Vector3(0f, 1f, 0f));
+        
+        mapItemDic.Add(tileIndex, mapItem);
 
         if (tileType == TileType.Coin)
         {
-            var coin = SpawnMapItem(mapItemList[0], position + new Vector3(0f, 1f, 0f));
-            var item = coin.GetComponent<DroppedItem>();
+            var item = mapItem.GetComponent<DroppedItem>();
 
             if (item != null)
             {
@@ -68,10 +72,6 @@ public class FieldSpawner : MonoBehaviour
                 });
             }
         }
-        else if (tileType == TileType.Enemy)
-        {
-            SpawnMapItem(mapItemList[1], position + new Vector3(0f, 1f, 0f));
-        }
     }
 
     public GameObject SpawnMapItem(GameObject prefab, Vector3 position)
@@ -80,10 +80,10 @@ public class FieldSpawner : MonoBehaviour
         block.gameObject.SetActive(true);
         block.transform.position = position;
 
-        if (!mapItemDic.ContainsKey(prefab.name))
-            mapItemDic.Add(prefab.name, new List<GameObject>());
+        if (!mapItemList.ContainsKey(prefab.name))
+            mapItemList.Add(prefab.name, new List<GameObject>());
 
-        if (mapItemDic.TryGetValue(prefab.name, out var itemList))
+        if (mapItemList.TryGetValue(prefab.name, out var itemList))
             itemList.Add(block);
 
         return block;
@@ -118,60 +118,45 @@ public class FieldSpawner : MonoBehaviour
 
     public IEnumerator MoveAndKillCo(int from)
     {
-        if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
+        var fromPosition = tilePositions[from];
+        var toPosition = tilePositions[from + 1];
+
+        fromPosition.y = playerFigure.transform.position.y;
+        toPosition.y = playerFigure.transform.position.y;
+
+        playerFigure.transform.position = fromPosition;
+        playerFigure.transform.LookAt(toPosition);
+
+        var showEffectTime = Time.time + 0.1f;
+
+        while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
         {
-            var fromItem = itemList[from];
-            var toItem = itemList[from + 1];
-
-            if (fromItem != null && toItem != null)
+            if (Time.time > showEffectTime)
             {
-                var fromPosition = fromItem.transform.position;
-                var toPosition = toItem.transform.position;
-
-                fromPosition.y = playerFigure.transform.position.y;
-                toPosition.y = playerFigure.transform.position.y;
-
-                playerFigure.transform.position = fromPosition;
-                playerFigure.transform.LookAt(toPosition);
-
-                var showEffectTime = Time.time + 0.1f;
-
-                while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
-                {
-                    if (Time.time > showEffectTime)
-                        effectManager.ShowEffect(2, toPosition);
-
-                    yield return null;
-                    playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
-                }
+                effectManager.ShowEffect(2, toPosition);
+                mapItemDic[from + 1].gameObject.SetActive(false);
             }
+            
+            yield return null;
+            playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
         }
     }
 
     IEnumerator MoveFigureOneCo(int from)
     {
-        if (mapItemDic.TryGetValue(mapPrefab.name, out var itemList))
+        var fromPosition = tilePositions[from];
+        var toPosition = tilePositions[from + 1];
+
+        fromPosition.y = playerFigure.transform.position.y;
+        toPosition.y = playerFigure.transform.position.y;
+
+        playerFigure.transform.position = fromPosition;
+        playerFigure.transform.LookAt(toPosition);
+
+        while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
         {
-            var fromItem = itemList[from];
-            var toItem = itemList[from + 1];
-
-            if (fromItem != null && toItem != null)
-            {
-                var fromPosition = fromItem.transform.position;
-                var toPosition = toItem.transform.position;
-
-                fromPosition.y = playerFigure.transform.position.y;
-                toPosition.y = playerFigure.transform.position.y;
-
-                playerFigure.transform.position = fromPosition;
-                playerFigure.transform.LookAt(toPosition);
-
-                while (Vector3.SqrMagnitude(playerFigure.transform.position - toPosition) > positionError)
-                {
-                    yield return null;
-                    playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
-                }
-            }
+            yield return null;
+            playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
         }
     }
 }

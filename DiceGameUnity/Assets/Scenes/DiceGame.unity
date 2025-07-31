@@ -2939,9 +2939,9 @@ MonoBehaviour:
   figureAnimator: {fileID: 565234871}
   dice0: {fileID: 1141673228}
   dice1: {fileID: 408441982}
-  mapItemList:
+  mapItemPrefabList:
   - {fileID: 738079829}
-  - {fileID: 180922601}
+  - {fileID: 1068845311}
   size: {x: 11, y: 11}
   gap: 3
   figureSpeed: 10
