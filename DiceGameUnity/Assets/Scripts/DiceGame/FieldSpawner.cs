@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class FieldSpawner : MonoBehaviour
 {
@@ -133,6 +135,8 @@ public class FieldSpawner : MonoBehaviour
         {
             if (Time.time > showEffectTime)
             {
+                showEffectTime = float.MaxValue;
+                effectManager.ShowEffect(3, toPosition);
                 effectManager.ShowEffect(2, toPosition);
                 mapItemDic[from + 1].gameObject.SetActive(false);
             }
@@ -140,6 +144,25 @@ public class FieldSpawner : MonoBehaviour
             yield return null;
             playerFigure.transform.position += (toPosition - playerFigure.transform.position).normalized * figureSpeed * Time.deltaTime;
         }
+    }
+
+    public IEnumerator AttackCo(int targetIndex, bool isDead)
+    {
+        var targetItem = mapItemDic[targetIndex];
+        var targetPosition = targetItem.transform.position;
+        figureAnimator.SetTrigger("Attack");
+
+        yield return new WaitForSeconds(0.4f);
+
+        effectManager.ShowEffect(3, targetPosition);
+
+        if (isDead)
+        {
+            effectManager.ShowEffect(2, targetPosition);
+            targetItem.gameObject.SetActive(false);
+        }
+
+        yield return new WaitForSeconds(0.3f);
     }
 
     IEnumerator MoveFigureOneCo(int from)

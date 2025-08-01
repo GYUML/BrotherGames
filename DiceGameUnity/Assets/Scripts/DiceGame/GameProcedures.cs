@@ -27,6 +27,8 @@ public class GameProcedures : MonoBehaviour
     int nowPosition = 0;
     TileType[] tiles = new TileType[44];
 
+    Dictionary<int, long> enemyHpDic = new Dictionary<int, long>();
+
     private void Start()
     {
         mainCoroutine = StartCoroutine(ProcCo());
@@ -36,8 +38,11 @@ public class GameProcedures : MonoBehaviour
             if (i % 11 == 0)
                 continue;
 
-            if (Random.Range(0f, 1f) < 0.2f)
+            if (Random.Range(0f, 1f) < 0.3f)
+            {
+                enemyHpDic.Add(i, 3);
                 tiles[i] = TileType.Enemy;
+            }
             else
                 tiles[i] = TileType.Coin;
 
@@ -106,10 +111,25 @@ public class GameProcedures : MonoBehaviour
         for (int i = 0; i < diceSum; i++)
         {
             if (tiles[nowPosition + 1] == TileType.Enemy)
-                yield return fieldSpawner.MoveAndKillCo(nowPosition);
+            {
+                var enemyHp = enemyHpDic[nowPosition + 1];
+                if (enemyHp > 0)
+                {
+                    enemyHpDic[nowPosition + 1]--;
+                    yield return fieldSpawner.AttackCo(nowPosition + 1, enemyHpDic[nowPosition + 1] <= 0);
+                }
+                else
+                {
+                    //yield return fieldSpawner.MoveAndKillCo(nowPosition);
+                    yield return fieldSpawner.MoveFigureCo(nowPosition, nowPosition + 1);
+                    nowPosition++;
+                }
+            }
             else
+            {
                 yield return fieldSpawner.MoveFigureCo(nowPosition, nowPosition + 1);
-            nowPosition++;
+                nowPosition++;
+            }
         }
 
         gameLayout.SetChargeButtonEnable(true);
