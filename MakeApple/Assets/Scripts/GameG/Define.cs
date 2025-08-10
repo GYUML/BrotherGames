@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameG
@@ -27,6 +28,7 @@ namespace GameG
 
         int remainTileCount;
         Vector2Int nowPosition;
+        Stack<Vector2Int> positionLog = new Stack<Vector2Int>();
 
         public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition)
         {
@@ -41,29 +43,26 @@ namespace GameG
         {
             remainTileCount = GetRemainTileCount(board);
             nowPosition = startPosition;
-        }
-
-        public bool IsEndGame(out bool success)
-        {
-            success = remainTileCount == 0;
-            return nowPosition == endPosition;
+            positionLog.Clear();
         }
 
         public void Move(Direction direction)
         {
-            var position = nowPosition;
+            var nextPosition = GetNextPosition(direction);
 
-            if (direction == Direction.Up)
-                position = nowPosition + new Vector2Int(0, -1);
-            else if (direction == Direction.Down)
-                position = nowPosition + new Vector2Int(0, 1);
-            else if (direction == Direction.Left)
-                position = nowPosition + new Vector2Int(-1, 0);
-            else if (direction == Direction.Right)
-                position = nowPosition + new Vector2Int(1, 0);
+            if (!IsEndGame() && IsMovePossible(nextPosition))
+                Move(nextPosition);
+        }
 
-            if (IsMovePossible(position))
-                Move(position);
+        public void RollBack()
+        {
+            if (positionLog.Count > 0)
+            {
+                var pos = positionLog.Pop();
+                remainTileCount++;
+                board[pos.x, pos.y] = 1;
+                nowPosition = pos;
+            }
         }
 
         public bool IsMovePossible(Vector2Int to)
@@ -80,9 +79,51 @@ namespace GameG
             return true;
         }
 
+        public bool IsEndGame()
+        {
+            bool isEndGame = false;
+
+            if (nowPosition == endPosition)
+            {
+                isEndGame = true;
+            }
+            else
+            {
+                if (!IsMovePossible(GetNextPosition(Direction.Up))
+                && !IsMovePossible(GetNextPosition(Direction.Down))
+                && !IsMovePossible(GetNextPosition(Direction.Left))
+                && !IsMovePossible(GetNextPosition(Direction.Right)))
+                    isEndGame = true;
+            }
+
+            return isEndGame;
+        }
+
+        public bool IsSuccessGame()
+        {
+            return remainTileCount == 1 && nowPosition == endPosition;
+        }
+
+        public int[,] GetBoardState()
+        {
+            return board;
+        }
+
+        public Vector2Int GetNowPosition()
+        {
+            return nowPosition;
+        }
+
+        public int GetRemainCount()
+        {
+            return remainTileCount;
+        }
+
         int Move(Vector2Int to)
         {
-            board[to.x, to.y] = 0;
+            positionLog.Push(nowPosition);
+
+            board[nowPosition.x, nowPosition.y] = 0;
             remainTileCount--;
             nowPosition = to;
 
@@ -100,6 +141,22 @@ namespace GameG
             }
 
             return count;
+        }
+
+        Vector2Int GetNextPosition(Direction direction)
+        {
+            var position = nowPosition;
+
+            if (direction == Direction.Up)
+                position = nowPosition + new Vector2Int(-1, 0);
+            else if (direction == Direction.Down)
+                position = nowPosition + new Vector2Int(1, 0);
+            else if (direction == Direction.Left)
+                position = nowPosition + new Vector2Int(0, -1);
+            else if (direction == Direction.Right)
+                position = nowPosition + new Vector2Int(0, 1);
+
+            return position;
         }
     }
 }
