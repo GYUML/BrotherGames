@@ -1,0 +1,217 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace GameG
+{
+    public class FieldView : MonoBehaviour
+    {
+        public GameProcedures procedures;
+
+        TilePuzzle puzzle = new TilePuzzle();
+        TilePuzzle virtualPuzzle = new TilePuzzle();
+
+        // GameObject setting
+        public GameObject tileBlockPrefab;
+        public GameObject selectBoxPrefab;
+        public GameObject player;
+
+        public float tileGap;
+        public Vector2 tilePivot;
+
+        public float moveSpeed;
+        public float moveError;
+
+        // GameObject state
+        int idCounter;
+        Dictionary<int, GameObject> tileMaps = new Dictionary<int, GameObject>();
+        Stack<GameObject> selectBoxPool = new Stack<GameObject>();
+        List<GameObject> selectedBoxList = new List<GameObject>();
+        Dictionary<int, Vector2Int> tilePositions = new Dictionary<int, Vector2Int>();
+        List<Vector2Int> moveList = new List<Vector2Int>();
+
+        bool[,] selectStateBoard;
+
+        private void Awake()
+        {
+            tileBlockPrefab.gameObject.SetActive(false);
+
+            puzzle.Init(new int[,]
+            {
+                { 1, 1, 1},
+                { 1, 1, 1},
+                { 1, 1, 1},
+            }, new Vector2Int(0, 0), new Vector2Int(2, 2));
+
+            virtualPuzzle.Init(new int[,]
+            {
+                { 1, 1, 1},
+                { 1, 1, 1},
+                { 1, 1, 1},
+            }, new Vector2Int(0, 0), new Vector2Int(2, 2));
+
+            SpawnField(puzzle);
+        }
+
+        private void Update()
+        {
+            if (puzzle.IsEndGame())
+                return;
+
+            if (Input.GetMouseButton(0))
+            {
+                var touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var hit = Physics2D.Raycast(touchPosition, Vector2.zero, 10f, LayerMask.GetMask("Tile"));
+                if (hit.collider != null)
+                {
+                    if (hit.collider.CompareTag("Platform"))
+                    {
+                        var id = hit.transform.GetComponent<TileEventListner>().Id;
+                        var nowPos = puzzle.GetNowPosition();
+                        var vPos = virtualPuzzle.GetNowPosition();
+                        var pos = tilePositions[id];
+                        var dir = GetDirection(vPos, pos);
+
+                        // 현재 타일은 선택되지 않은 상태여야 한다.
+                        if (selectStateBoard[pos.x, pos.y] == false)
+                        {
+                            // 현재 캐릭터 위치이거나, 캐릭터 위치가 선택된 상태여야 한다.
+                            if (pos == nowPos)
+                            {
+                                selectStateBoard[pos.x, pos.y] = true;
+                                ShowSelectBox(hit.transform.position);
+                                moveList.Add(pos);
+                            }
+                            else if (selectStateBoard[nowPos.x, nowPos.y] == true)
+                            {
+                                if (virtualPuzzle.IsMovePossible(dir) && !virtualPuzzle.IsEndGame())
+                                {
+                                    virtualPuzzle.Move(dir);
+                                    selectStateBoard[pos.x, pos.y] = true;
+                                    ShowSelectBox(hit.transform.position);
+                                    moveList.Add(pos);
+                                    Debug.Log(virtualPuzzle.GetString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                for (int i = 0; i < moveList.Count - 1; i++)
+                {
+                    var from = moveList[i];
+                    var to = moveList[i + 1];
+                    var dir = GetDirection(from, to);
+
+                    puzzle.Move(dir);
+                    MovePlayer(from, to);
+                }
+                moveList.Clear();
+                ClearSelectedBoxes();
+                selectStateBoard.SetAllFalse();
+
+                if (puzzle.IsEndGame())
+                    Debug.Log($"End Game. {puzzle.IsSuccessGame()}");
+            }
+        }
+
+        public void SpawnField(TilePuzzle puzzle)
+        {
+            var board = puzzle.GetBoardState();
+
+            for (int i = 0; i < board.GetLength(0); i++)
+            {
+                for (int j = 0; j < board.GetLength(1); j++)
+                {
+                    var instantiated = Instantiate(tileBlockPrefab, tileBlockPrefab.transform.parent);
+                    instantiated.transform.position = new Vector2(j * tileGap, -i * tileGap) + tilePivot;
+                    instantiated.gameObject.SetActive(true);
+                    instantiated.GetComponent<TileEventListner>().Id = idCounter;
+
+                    tileMaps.Add(idCounter, instantiated);
+                    tilePositions.Add(idCounter, new Vector2Int(i, j));
+                    idCounter++;
+                }
+            }
+
+            selectStateBoard = new bool[board.GetLength(0), board.GetLength(1)];
+            player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
+        }
+
+        void ShowSelectBox(Vector3 position)
+        {
+            var selectedBox = selectBoxPool.Count > 0 ? selectBoxPool.Pop() : Instantiate(selectBoxPrefab);
+            selectedBox.transform.position = position;
+            selectedBox.gameObject.SetActive(true);
+            selectedBoxList.Add(selectedBox);
+        }
+
+        void ClearSelectedBoxes()
+        {
+            foreach (var selectedBox in selectedBoxList)
+            {
+                selectedBox.gameObject.SetActive(false);
+                selectBoxPool.Push(selectedBox);
+            }
+
+            selectedBoxList.Clear();
+        }
+
+        void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
+        {
+            var prevId = FindTileId(prevPos);
+            var nowId = FindTileId(nowPos);
+            procedures.AddProcedure(MovePlayerCo(prevId, nowId));
+        }
+
+        IEnumerator MovePlayerCo(int prevTileId, int nowTileId)
+        {
+            var prevTile = tileMaps[prevTileId];
+            var nowTile = tileMaps[nowTileId];
+
+            yield return MovePlayerAniCo(nowTile.transform.position);
+            prevTile.GetComponent<TileEventListner>().DoDrop();
+        }
+
+        IEnumerator MovePlayerAniCo(Vector3 position)
+        {
+            while (Vector3.SqrMagnitude(player.transform.position - position) > moveError)
+            {
+                yield return null;
+                player.transform.position = Vector3.MoveTowards(player.transform.position, position, Time.deltaTime * moveSpeed);
+            }
+
+            player.transform.position = position;
+        }
+
+        int FindTileId(Vector2Int tilePosition)
+        {
+            foreach (var tile in tilePositions)
+            {
+                if (tile.Value == tilePosition)
+                    return tile.Key;
+            }
+
+            return -1;
+        }
+
+        Direction GetDirection(Vector2Int from, Vector2Int to)
+        {
+            var vector = to - from;
+
+            if (vector == Vector2Int.up)
+                return Direction.Up;
+            else if (vector == Vector2Int.down)
+                return Direction.Down;
+            else if (vector == Vector2Int.left)
+                return Direction.Left;
+            else if (vector == Vector2Int.right)
+                return Direction.Right;
+
+            return Direction.None;
+        }
+    }
+}
