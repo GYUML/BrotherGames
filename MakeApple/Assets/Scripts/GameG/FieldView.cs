@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace GameG
 {
@@ -141,6 +142,19 @@ namespace GameG
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
         }
 
+        public void UndoMove()
+        {
+            var log = puzzle.GetPositionLog();
+
+            if (log.Count > 0)
+            {
+                var prePos = log.Peek();
+                puzzle.UndoMove();
+                virtualPuzzle.UndoMove();
+                procedures.AddProcedure(UndoMovePlayer(prePos));
+            }
+        }
+
         void ShowSelectBox(Vector3 position)
         {
             var selectedBox = selectBoxPool.Count > 0 ? selectBoxPool.Pop() : Instantiate(selectBoxPrefab);
@@ -185,6 +199,17 @@ namespace GameG
             }
 
             player.transform.position = position;
+        }
+
+        IEnumerator UndoMovePlayer(Vector2Int prePos)
+        {
+            var preId = FindTileId(prePos);
+            var tile = tileMaps[preId];
+
+            tile.GetComponent<TileEventListner>().UndoDrop();
+            player.transform.position = tile.transform.position;
+
+            yield return null;
         }
 
         int FindTileId(Vector2Int tilePosition)

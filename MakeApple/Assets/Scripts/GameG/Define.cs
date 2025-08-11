@@ -70,20 +70,6 @@ namespace GameG
             return direction != Direction.None && IsMovePossible(GetNextPosition(direction));
         }
 
-        bool IsMovePossible(Vector2Int to)
-        {
-            if (to.x < 0 || to.x >= board.GetLength(0) || to.y < 0 || to.y >= board.GetLength(1))
-            {
-                return false;
-            }
-            else if (board[to.x, to.y] != 1)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public bool IsEndGame()
         {
             bool isEndGame = false;
@@ -112,6 +98,11 @@ namespace GameG
         public int[,] GetBoardState()
         {
             return board;
+        }
+
+        public Stack<Vector2Int> GetPositionLog()
+        {
+            return positionLog;
         }
 
         public Vector2Int GetNowPosition()
@@ -160,6 +151,20 @@ namespace GameG
                 position = nowPosition + Vector2Int.right;
 
             return position;
+        }
+
+        bool IsMovePossible(Vector2Int to)
+        {
+            if (to.x < 0 || to.x >= board.GetLength(0) || to.y < 0 || to.y >= board.GetLength(1))
+            {
+                return false;
+            }
+            else if (board[to.x, to.y] != 1)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

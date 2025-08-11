@@ -10,6 +10,8 @@ public class TileEventListner : MonoBehaviour
     SpriteRenderer spriteRenderer;
     BoxCollider2D boxCollider;
 
+    Coroutine fadeCoroutine;
+
     private void OnEnable()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -20,22 +22,33 @@ public class TileEventListner : MonoBehaviour
     public void DoDrop()
     {
         boxCollider.enabled = false;
-        StartCoroutine(FadeCo());
+        fadeCoroutine = StartCoroutine(FadeCo(1f, 0f));
     }
 
-    IEnumerator FadeCo()
+    public void UndoDrop()
+    {
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        boxCollider.enabled = true;
+        var color = spriteRenderer.color;
+        color.a = 1f;
+        spriteRenderer.color = color;
+    }
+
+    IEnumerator FadeCo(float from, float to)
     {
         var color = spriteRenderer.color;
-        var elapsed = 0f;
+        var elapsed = to;
 
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
-            float newAlpha = Mathf.Lerp(color.a, 0f, elapsed / fadeDuration);
+            float newAlpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
             spriteRenderer.color = new Color(color.r, color.g, color.b, newAlpha);
             yield return null;
         }
 
-        spriteRenderer.color = new Color(color.r, color.g, color.b, 0f);
+        spriteRenderer.color = new Color(color.r, color.g, color.b, to);
     }
 }
