@@ -19,8 +19,8 @@ namespace GameG
 
         private void Start()
         {
-            puzzle.Init(testPuzzle, new Vector2Int(0, 0), new Vector2Int(2, 2));
-            Debug.Log(GetAnswerCount(puzzle));
+            //puzzle.Init(testPuzzle, new Vector2Int(0, 0), new Vector2Int(2, 2));
+            //Debug.Log(GetAnswerCount(puzzle));
         }
 
         public int GetAnswerCount(TilePuzzle puzzle)
@@ -52,31 +52,31 @@ namespace GameG
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                puzzle.Move(Direction.Up);
-                Print(puzzle.GetBoardState());
-            }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                puzzle.Move(Direction.Down);
-                Print(puzzle.GetBoardState());
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                puzzle.Move(Direction.Left);
-                Print(puzzle.GetBoardState());
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                puzzle.Move(Direction.Right);
-                Print(puzzle.GetBoardState());
-            }
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                puzzle.UndoMove();
-                Print(puzzle.GetBoardState());
-            }
+            //if (Input.GetKeyDown(KeyCode.UpArrow))
+            //{
+            //    puzzle.Move(Direction.Up);
+            //    Print(puzzle.GetBoardState());
+            //}
+            //else if (Input.GetKeyDown(KeyCode.DownArrow))
+            //{
+            //    puzzle.Move(Direction.Down);
+            //    Print(puzzle.GetBoardState());
+            //}
+            //else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            //{
+            //    puzzle.Move(Direction.Left);
+            //    Print(puzzle.GetBoardState());
+            //}
+            //else if (Input.GetKeyDown(KeyCode.RightArrow))
+            //{
+            //    puzzle.Move(Direction.Right);
+            //    Print(puzzle.GetBoardState());
+            //}
+            //else if (Input.GetKeyDown(KeyCode.Escape))
+            //{
+            //    puzzle.UndoMove();
+            //    Print(puzzle.GetBoardState());
+            //}
         }
 
         void Print(int[,] board)

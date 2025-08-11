@@ -46,7 +46,7 @@ namespace GameG
             positionLog.Clear();
         }
 
-        public virtual void Move(Direction direction)
+        public void Move(Direction direction)
         {
             var nextPosition = GetNextPosition(direction);
 
@@ -67,10 +67,10 @@ namespace GameG
 
         public bool IsMovePossible(Direction direction)
         {
-            return IsMovePossible(GetNextPosition(direction));
+            return direction != Direction.None && IsMovePossible(GetNextPosition(direction));
         }
 
-        public bool IsMovePossible(Vector2Int to)
+        bool IsMovePossible(Vector2Int to)
         {
             if (to.x < 0 || to.x >= board.GetLength(0) || to.y < 0 || to.y >= board.GetLength(1))
             {
@@ -94,10 +94,10 @@ namespace GameG
             }
             else
             {
-                if (!IsMovePossible(GetNextPosition(Direction.Up))
-                && !IsMovePossible(GetNextPosition(Direction.Down))
-                && !IsMovePossible(GetNextPosition(Direction.Left))
-                && !IsMovePossible(GetNextPosition(Direction.Right)))
+                if (!IsMovePossible(Direction.Up)
+                && !IsMovePossible(Direction.Down)
+                && !IsMovePossible(Direction.Left)
+                && !IsMovePossible(Direction.Right))
                     isEndGame = true;
             }
 
@@ -151,13 +151,13 @@ namespace GameG
             var position = nowPosition;
 
             if (direction == Direction.Up)
-                position = nowPosition + new Vector2Int(-1, 0);
+                position = nowPosition + Vector2Int.up;
             else if (direction == Direction.Down)
-                position = nowPosition + new Vector2Int(1, 0);
+                position = nowPosition + Vector2Int.down;
             else if (direction == Direction.Left)
-                position = nowPosition + new Vector2Int(0, -1);
+                position = nowPosition + Vector2Int.left;
             else if (direction == Direction.Right)
-                position = nowPosition + new Vector2Int(0, 1);
+                position = nowPosition + Vector2Int.right;
 
             return position;
         }

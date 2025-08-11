@@ -19,6 +19,43 @@ namespace GameG
             return result;
         }
 
+        public static string GetString(this int[,] array)
+        {
+            var result = "";
+
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    result += array[i, j] + " ";
+                }
+                result += "\n";
+            }
+
+            return result;
+        }
+
+        public static string GetString(this TilePuzzle puzzle)
+        {
+            var result = "";
+            var board = puzzle.GetBoardState();
+            var now = puzzle.GetNowPosition();
+
+            for (int i = 0; i < board.GetLength(0); i++)
+            {
+                for (int j = 0; j < board.GetLength(1); j++)
+                {
+                    if (now.x == i && now.y == j)
+                        result += "* ";
+                    else
+                        result += board[i, j] + " ";
+                }
+                result += "\n";
+            }
+
+            return result;
+        }
+
         public static void SetAllZero(this int[,] array)
         {
             for (int i = 0; i < array.GetLength(0); i++)
