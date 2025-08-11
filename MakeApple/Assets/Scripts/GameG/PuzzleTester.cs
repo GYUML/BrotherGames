@@ -15,19 +15,38 @@ namespace GameG
             { 1, 1, 1},
             { 1, 1, 1},
         };
+        Direction[] directions = new Direction[] { Direction.Up, Direction.Down, Direction.Left, Direction.Right };
 
         private void Start()
         {
             puzzle.Init(testPuzzle, new Vector2Int(0, 0), new Vector2Int(2, 2));
+            Debug.Log(GetAnswerCount(puzzle));
         }
 
-        void Test()
+        public int GetAnswerCount(TilePuzzle puzzle)
         {
-            var success = false;
+            var answerCount = 0;
+            DFS(puzzle, ref answerCount);
+            return answerCount;
+        }
 
-            while (!puzzle.IsEndGame())
+        void DFS(TilePuzzle puzzle, ref int answerCount)
+        {
+            if (puzzle.IsEndGame())
             {
+                if (puzzle.IsSuccessGame())
+                    answerCount++;
+                return;
+            }
 
+            foreach (var direction in directions)
+            {
+                if (puzzle.IsMovePossible(direction))
+                {
+                    puzzle.Move(direction);
+                    DFS(puzzle, ref answerCount);
+                    puzzle.UndoMove();
+                }
             }
         }
 
@@ -55,7 +74,7 @@ namespace GameG
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
-                puzzle.RollBack();
+                puzzle.UndoMove();
                 Print(puzzle.GetBoardState());
             }
         }

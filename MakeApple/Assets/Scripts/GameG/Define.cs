@@ -46,7 +46,7 @@ namespace GameG
             positionLog.Clear();
         }
 
-        public void Move(Direction direction)
+        public virtual void Move(Direction direction)
         {
             var nextPosition = GetNextPosition(direction);
 
@@ -54,7 +54,7 @@ namespace GameG
                 Move(nextPosition);
         }
 
-        public void RollBack()
+        public void UndoMove()
         {
             if (positionLog.Count > 0)
             {
@@ -63,6 +63,11 @@ namespace GameG
                 board[pos.x, pos.y] = 1;
                 nowPosition = pos;
             }
+        }
+
+        public bool IsMovePossible(Direction direction)
+        {
+            return IsMovePossible(GetNextPosition(direction));
         }
 
         public bool IsMovePossible(Vector2Int to)
@@ -119,15 +124,13 @@ namespace GameG
             return remainTileCount;
         }
 
-        int Move(Vector2Int to)
+        void Move(Vector2Int to)
         {
             positionLog.Push(nowPosition);
 
             board[nowPosition.x, nowPosition.y] = 0;
             remainTileCount--;
             nowPosition = to;
-
-            return 0;
         }
 
         int GetRemainTileCount(int[,] board)

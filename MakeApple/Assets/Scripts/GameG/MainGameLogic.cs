@@ -1,10 +1,14 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace GameG
 {
     public class MainGameLogic : MonoBehaviour
     {
+        public GameProcedures procedures;
+
         // Data setting
         int[,] board = new int[,]
         {
@@ -19,6 +23,7 @@ namespace GameG
         // Data State
         int[,] nowBoard;
         Vector2Int nowPosition;
+        Vector2Int prePosition;
         int remainTile = 0;
 
         // GameObject setting
@@ -28,6 +33,9 @@ namespace GameG
 
         public float tileGap;
         public Vector2 tilePivot;
+
+        public float moveSpeed;
+        public float moveError;
 
         // GameObject state
         int idCounter;
@@ -39,7 +47,7 @@ namespace GameG
 
         bool[,] selectStateBoard;
 
-        private void Start()
+        private void Awake()
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
@@ -63,7 +71,7 @@ namespace GameG
 
             selectStateBoard = new bool[nowBoard.GetLength(0), nowBoard.GetLength(1)];
 
-            MoveToTile(startPosition);
+            MoveToTile(startPosition, true);
         }
 
         private void Update()
@@ -71,7 +79,7 @@ namespace GameG
             if (Input.GetMouseButton(0))
             {
                 var touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var hit = Physics2D.Raycast(touchPosition, Vector2.zero); // Vector2.zero는 방향이 없음을 의미
+                var hit = Physics2D.Raycast(touchPosition, Vector2.zero, 10f, LayerMask.GetMask("Tile"));
                 if (hit.collider != null)
                 {
                     if (hit.collider.CompareTag("Platform"))
@@ -87,10 +95,11 @@ namespace GameG
                             {
                                 selectStateBoard[pos.x, pos.y] = true;
                                 ShowSelectBox(hit.transform.position);
+                                moveList.Add(pos);
                             }
                             else if (selectStateBoard[nowPosition.x, nowPosition.y] == true)
                             {
-                                if (nowBoard[pos.x, pos.y] == 1)
+                                if (nowBoard[pos.x, pos.y] == 1 && Vector2Int.Distance(moveList.Last(), pos) == 1)
                                 {
                                     selectStateBoard[pos.x, pos.y] = true;
                                     ShowSelectBox(hit.transform.position);
@@ -104,9 +113,7 @@ namespace GameG
             else if (Input.GetMouseButtonUp(0))
             {
                 foreach (var pos in moveList)
-                {
-                    MoveToTile(pos);
-                }
+                    MoveToTile(pos, false);
                 moveList.Clear();
                 ClearSelectedBoxes();
                 selectStateBoard.SetAllFalse();
@@ -126,9 +133,11 @@ namespace GameG
             return count;
         }
 
-        void MoveToTile(Vector2Int to)
+        void MoveToTile(Vector2Int to, bool immediately)
         {
-            if (to.x < 0 || to.x >= nowBoard.GetLength(0)
+            if (!immediately && nowPosition == to)
+                return;
+            else if (to.x < 0 || to.x >= nowBoard.GetLength(0)
                 || to.y < 0 || to.y >= nowBoard.GetLength(1)
                 || nowBoard[to.x, to.y] != 1)
             {
@@ -143,16 +152,13 @@ namespace GameG
 
             nowBoard[to.x, to.y] = 0;
             remainTile--;
+            prePosition = nowPosition;
             nowPosition = to;
 
-            foreach (var tilePosition in tilePositions)
-            {
-                if (tilePosition.Value == nowPosition)
-                {
-                    player.transform.position = tileMaps[tilePosition.Key].transform.position;
-                    break;
-                }
-            }
+            if (immediately)
+                MovePlayer(nowPosition);
+            else
+                MovePlayer(prePosition, nowPosition);
 
             Debug.Log($"remainTile : {remainTile}");
         }
@@ -174,6 +180,53 @@ namespace GameG
             }
 
             selectedBoxList.Clear();
+        }
+
+        void MovePlayer(Vector2Int position)
+        {
+            var tileId = FindTileId(position);
+            procedures.AddProcedure(MovePlayer(tileMaps[tileId].transform.position, true));
+        }
+
+        void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
+        {
+            var prevId = FindTileId(prevPos);
+            var nowId = FindTileId(nowPos);
+            procedures.AddProcedure(MovePlayer(prevId, nowId));
+        }
+
+        IEnumerator MovePlayer(int prevTileId, int nowTileId)
+        {
+            var prevTile = tileMaps[prevTileId];
+            var nowTile = tileMaps[nowTileId];
+
+            yield return MovePlayer(nowTile.transform.position, false);
+            prevTile.GetComponent<TileEventListner>().DoDrop();
+        }
+
+        IEnumerator MovePlayer(Vector3 position, bool immediately)
+        {
+            if (!immediately)
+            {
+                while (Vector3.SqrMagnitude(player.transform.position - position) > moveError)
+                {
+                    yield return null;
+                    player.transform.position = Vector3.MoveTowards(player.transform.position, position, Time.deltaTime * moveSpeed);
+                }
+            }
+            
+            player.transform.position = position;
+        }
+
+        int FindTileId(Vector2Int tilePosition)
+        {
+            foreach (var tile in tilePositions)
+            {
+                if (tile.Value == tilePosition)
+                    return tile.Key;
+            }
+
+            return -1;
         }
     }
 }
