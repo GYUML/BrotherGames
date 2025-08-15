@@ -16,7 +16,8 @@ namespace GameG
         // GameObject setting
         public GameObject tileBlockPrefab;
         public GameObject selectBoxPrefab;
-        public GameObject wallPrefab;
+        public GameObject wallVerticalPrefab;
+        public GameObject wallHorizontalPrefab;
         public GameObject player;
 
         public Vector2 tileGap;
@@ -46,7 +47,7 @@ namespace GameG
                 { 1, 1, 1 },
                 { 1, 1, 1 },
                 { 1, 1, 1 },
-            }, new Vector2Int(0, 0), new Vector2Int(2, 2),
+            }, new Vector2Int(0, 0), new Vector2Int(3, 2),
             new int[,]
             {
                 { 0, 0, 0 },
@@ -61,7 +62,7 @@ namespace GameG
                 { 1, 1, 1 },
                 { 1, 1, 1 },
                 { 1, 1, 1 },
-            }, new Vector2Int(0, 0), new Vector2Int(2, 2),
+            }, new Vector2Int(0, 0), new Vector2Int(3, 2),
             new int[,]
             {
                 { 0, 0, 0 },
@@ -159,7 +160,31 @@ namespace GameG
 
             for (int i = 0; i < wallBoard.GetLength(0); i++)
             {
+                for (int j = 0; j < wallBoard.GetLength(1); j++)
+                {
+                    var pos = new Vector2Int(i, j);
 
+                    if (board.ValidPosition(pos + Vector2Int.up) && puzzle.HasWall(pos, Direction.Up) && puzzle.HasWall(pos + Vector2Int.up, Direction.Down))
+                    {
+                        var wallPos = Vector3.Lerp(tileMaps[FindTileId(pos)].transform.position, tileMaps[FindTileId(pos + Vector2Int.up)].transform.position, 0.5f);
+                        var wall = Instantiate(wallVerticalPrefab);
+                        wall.transform.position = wallPos;
+                    }
+                    if (board.ValidPosition(pos + Vector2Int.down) && puzzle.HasWall(pos, Direction.Down) && puzzle.HasWall(pos + Vector2Int.down, Direction.Up))
+                    {
+                        // Skip
+                    }
+                    if (board.ValidPosition(pos + Vector2Int.left) && puzzle.HasWall(pos, Direction.Left) && puzzle.HasWall(pos + Vector2Int.left, Direction.Right))
+                    {
+                        // Skip
+                    }
+                    if (board.ValidPosition(pos + Vector2Int.right) && puzzle.HasWall(pos, Direction.Right) && puzzle.HasWall(pos + Vector2Int.right, Direction.Left))
+                    {
+                        var wallPos = Vector3.Lerp(tileMaps[FindTileId(pos)].transform.position, tileMaps[FindTileId(pos + Vector2Int.up)].transform.position, 0.5f);
+                        var wall = Instantiate(wallHorizontalPrefab);
+                        wall.transform.position = wallPos;
+                    }
+                }
             }
 
             selectStateBoard = new bool[board.GetLength(0), board.GetLength(1)];
