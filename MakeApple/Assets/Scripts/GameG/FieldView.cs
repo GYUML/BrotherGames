@@ -18,6 +18,7 @@ namespace GameG
         public GameObject selectBoxPrefab;
         public GameObject wallVerticalPrefab;
         public GameObject wallHorizontalPrefab;
+        public GameObject flagPrefab;
         public GameObject player;
 
         public Vector2 tileGap;
@@ -173,6 +174,9 @@ namespace GameG
                     }
                 }
             }
+
+            var flag = Instantiate(flagPrefab);
+            flag.transform.position = tileMaps[FindTileId(puzzle.GetEndPosition())].transform.position;
 
             selectStateBoard = new bool[board.GetLength(0), board.GetLength(1)];
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;

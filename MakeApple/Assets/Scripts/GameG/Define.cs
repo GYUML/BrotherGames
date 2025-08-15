@@ -131,6 +131,11 @@ namespace GameG
             return result > 0;
         }
 
+        public Vector2Int GetEndPosition()
+        {
+            return endPosition;
+        }
+
         void Move(Vector2Int to)
         {
             positionLog.Push(nowPosition);
