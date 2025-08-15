@@ -36,40 +36,27 @@ namespace GameG
 
         bool[,] selectStateBoard;
 
+        int[,] testBoard = new int[,]
+        {
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+        };
+        int[,] testWall = new int[,]
+        {
+            { 0, 8, 0 },
+            { 0, 4, 0 },
+            { 0, 0, 0 },
+            { 0, 1, 2 },
+        };
+
         private void Awake()
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
-            puzzle.Init(
-                new int[,]
-            {
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-            }, new Vector2Int(0, 0), new Vector2Int(3, 2),
-            new int[,]
-            {
-                { 0, 0, 0 },
-                { 1, 2, 0 },
-                { 0, 0, 0 },
-                { 0, 0, 0 },
-            });
-
-            virtualPuzzle.Init(new int[,]
-            {
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-                { 1, 1, 1 },
-            }, new Vector2Int(0, 0), new Vector2Int(3, 2),
-            new int[,]
-            {
-                { 0, 0, 0 },
-                { 1, 2, 0 },
-                { 0, 0, 0 },
-                { 0, 0, 0 }
-            });
+            puzzle.Init(testBoard, new Vector2Int(0, 0), new Vector2Int(3, 2), testWall);
+            virtualPuzzle.Init(testBoard, new Vector2Int(0, 0), new Vector2Int(3, 2), testWall);
 
             SpawnField(puzzle);
         }
@@ -180,7 +167,7 @@ namespace GameG
                     }
                     if (board.ValidPosition(pos + Vector2Int.right) && puzzle.HasWall(pos, Direction.Right) && puzzle.HasWall(pos + Vector2Int.right, Direction.Left))
                     {
-                        var wallPos = Vector3.Lerp(tileMaps[FindTileId(pos)].transform.position, tileMaps[FindTileId(pos + Vector2Int.up)].transform.position, 0.5f);
+                        var wallPos = Vector3.Lerp(tileMaps[FindTileId(pos)].transform.position, tileMaps[FindTileId(pos + Vector2Int.right)].transform.position, 0.5f);
                         var wall = Instantiate(wallHorizontalPrefab);
                         wall.transform.position = wallPos;
                     }

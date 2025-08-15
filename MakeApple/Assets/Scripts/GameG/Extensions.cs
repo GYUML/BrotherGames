@@ -80,7 +80,7 @@ namespace GameG
 
         public static bool ValidPosition(this int[,] array, Vector2Int pos)
         {
-            return pos.x >= 0 || pos.x < array.GetLength(0) || pos.y >= 0 || pos.y < array.GetLength(1);
+            return pos.x >= 0 && pos.x < array.GetLength(0) && pos.y >= 0 && pos.y < array.GetLength(1);
         }
     }
 }
