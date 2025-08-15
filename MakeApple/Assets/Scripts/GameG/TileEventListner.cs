@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TileEventListner : MonoBehaviour
@@ -6,17 +7,23 @@ public class TileEventListner : MonoBehaviour
     public int Id;
 
     public float fadeDuration;
+    public List<SpriteRenderer> renderers;
 
-    SpriteRenderer spriteRenderer;
     BoxCollider2D boxCollider;
 
     Coroutine fadeCoroutine;
+    List<float> alphaList = new List<float>();
+
+    private void Awake()
+    {
+        foreach (var r in renderers)
+            alphaList.Add(r.color.a);
+    }
 
     private void OnEnable()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
         boxCollider = GetComponent<BoxCollider2D>();
-        boxCollider.enabled = true;
+        boxCollider.enabled = true;   
     }
 
     public void DoDrop()
@@ -31,24 +38,32 @@ public class TileEventListner : MonoBehaviour
             StopCoroutine(fadeCoroutine);
 
         boxCollider.enabled = true;
-        var color = spriteRenderer.color;
-        color.a = 1f;
-        spriteRenderer.color = color;
+        MultipleAllAlpha(1f);
     }
 
     IEnumerator FadeCo(float from, float to)
     {
-        var color = spriteRenderer.color;
-        var elapsed = to;
+        var elapsed = 0f;
 
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
             float newAlpha = Mathf.Lerp(from, to, elapsed / fadeDuration);
-            spriteRenderer.color = new Color(color.r, color.g, color.b, newAlpha);
+            MultipleAllAlpha(newAlpha);
             yield return null;
         }
 
-        spriteRenderer.color = new Color(color.r, color.g, color.b, to);
+        MultipleAllAlpha(to);
+    }
+
+    void MultipleAllAlpha(float multi)
+    {
+        for (int i = 0; i < renderers.Count; i++)
+        {
+            var newAlpha = alphaList[i] * multi;
+            var color = renderers[i].color;
+            color.a = newAlpha;
+            renderers[i].color = color;
+        }
     }
 }

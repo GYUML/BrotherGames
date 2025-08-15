@@ -108,21 +108,7 @@ namespace GameG
             }
             else if (Input.GetMouseButtonUp(0))
             {
-                for (int i = 0; i < moveList.Count - 1; i++)
-                {
-                    var from = moveList[i];
-                    var to = moveList[i + 1];
-                    var dir = GetDirection(from, to);
-
-                    puzzle.Move(dir);
-                    MovePlayer(from, to);
-                }
-                moveList.Clear();
-                ClearSelectedBoxes();
-                selectStateBoard.SetAllFalse();
-
-                if (puzzle.IsEndGame())
-                    Debug.Log($"End Game. {puzzle.IsSuccessGame()}");
+                
             }
         }
 
@@ -182,9 +168,39 @@ namespace GameG
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
         }
 
+        public void SubmitMove()
+        {
+            for (int i = 0; i < moveList.Count - 1; i++)
+            {
+                var from = moveList[i];
+                var to = moveList[i + 1];
+                var dir = GetDirection(from, to);
+
+                puzzle.Move(dir);
+                MovePlayer(from, to);
+            }
+            moveList.Clear();
+            ClearSelectedBoxes();
+            selectStateBoard.SetAllFalse();
+
+            if (puzzle.IsEndGame())
+                Debug.Log($"End Game. {puzzle.IsSuccessGame()}");
+        }
+
+        public void ClearSelect()
+        {
+            for (int i = 0; i < moveList.Count - 1; i++)
+                virtualPuzzle.UndoMove();
+
+            moveList.Clear();
+            ClearSelectedBoxes();
+            selectStateBoard.SetAllFalse();
+        }
+
         public void UndoMove()
         {
             var log = puzzle.GetPositionLog();
+            ClearSelect();
 
             if (log.Count > 0)
             {
