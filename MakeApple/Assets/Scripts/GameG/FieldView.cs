@@ -16,9 +16,10 @@ namespace GameG
         // GameObject setting
         public GameObject tileBlockPrefab;
         public GameObject selectBoxPrefab;
+        public GameObject wallPrefab;
         public GameObject player;
 
-        public float tileGap;
+        public Vector2 tileGap;
         public Vector2 tilePivot;
 
         public float moveSpeed;
@@ -38,19 +39,36 @@ namespace GameG
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
-            puzzle.Init(new int[,]
+            puzzle.Init(
+                new int[,]
             {
-                { 1, 1, 1},
-                { 1, 1, 1},
-                { 1, 1, 1},
-            }, new Vector2Int(0, 0), new Vector2Int(2, 2));
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+            }, new Vector2Int(0, 0), new Vector2Int(2, 2),
+            new int[,]
+            {
+                { 0, 0, 0 },
+                { 1, 2, 0 },
+                { 0, 0, 0 },
+                { 0, 0, 0 },
+            });
 
             virtualPuzzle.Init(new int[,]
             {
-                { 1, 1, 1},
-                { 1, 1, 1},
-                { 1, 1, 1},
-            }, new Vector2Int(0, 0), new Vector2Int(2, 2));
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+                { 1, 1, 1 },
+            }, new Vector2Int(0, 0), new Vector2Int(2, 2),
+            new int[,]
+            {
+                { 0, 0, 0 },
+                { 1, 2, 0 },
+                { 0, 0, 0 },
+                { 0, 0, 0 }
+            });
 
             SpawnField(puzzle);
         }
@@ -122,13 +140,14 @@ namespace GameG
         public void SpawnField(TilePuzzle puzzle)
         {
             var board = puzzle.GetBoardState();
+            var wallBoard = puzzle.GetWallMaskBoard();
 
             for (int i = 0; i < board.GetLength(0); i++)
             {
                 for (int j = 0; j < board.GetLength(1); j++)
                 {
                     var instantiated = Instantiate(tileBlockPrefab, tileBlockPrefab.transform.parent);
-                    instantiated.transform.position = new Vector2(j * tileGap, -i * tileGap) + tilePivot;
+                    instantiated.transform.position = new Vector2(j * tileGap.x, -i * tileGap.y) + tilePivot;
                     instantiated.gameObject.SetActive(true);
                     instantiated.GetComponent<TileEventListner>().Id = idCounter;
 
@@ -136,6 +155,11 @@ namespace GameG
                     tilePositions.Add(idCounter, new Vector2Int(i, j));
                     idCounter++;
                 }
+            }
+
+            for (int i = 0; i < wallBoard.GetLength(0); i++)
+            {
+
             }
 
             selectStateBoard = new bool[board.GetLength(0), board.GetLength(1)];

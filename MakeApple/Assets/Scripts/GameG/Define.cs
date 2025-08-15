@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,26 +16,27 @@ namespace GameG
         None = 0,
         Up= 1,
         Down= 2,
-        Left= 3,
-        Right= 4,
+        Left= 4,
+        Right= 8,
     }
 
     public class TilePuzzle
     {
         int[,] board;
-
         Vector2Int startPosition;
         Vector2Int endPosition;
+        int[,] wallMaskBoard;
 
         int remainTileCount;
         Vector2Int nowPosition;
         Stack<Vector2Int> positionLog = new Stack<Vector2Int>();
 
-        public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition)
+        public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition, int[,] wallMaskDic)
         {
             this.board = board.DeepCopy();
             this.startPosition = startPosition;
             this.endPosition = endPosition;
+            this.wallMaskBoard = wallMaskDic;
 
             Reset();
         }
@@ -50,7 +52,7 @@ namespace GameG
         {
             var nextPosition = GetNextPosition(direction);
 
-            if (!IsEndGame() && IsMovePossible(nextPosition))
+            if (!IsEndGame() && IsMovePossibleTile(nextPosition))
                 Move(nextPosition);
         }
 
@@ -67,7 +69,7 @@ namespace GameG
 
         public bool IsMovePossible(Direction direction)
         {
-            return direction != Direction.None && IsMovePossible(GetNextPosition(direction));
+            return direction != Direction.None && IsMovePossibleTile(GetNextPosition(direction)) && !HasWall(GetNowPosition(), direction);
         }
 
         public bool IsEndGame()
@@ -100,6 +102,11 @@ namespace GameG
             return board;
         }
 
+        public int[,] GetWallMaskBoard()
+        {
+            return wallMaskBoard;
+        }
+
         public Stack<Vector2Int> GetPositionLog()
         {
             return positionLog;
@@ -113,6 +120,15 @@ namespace GameG
         public int GetRemainCount()
         {
             return remainTileCount;
+        }
+
+        public bool HasWall(Vector2Int position, Direction direction)
+        {
+            if (position.x < 0 || position.x >= wallMaskBoard.GetLength(0) || position.y < 0 || position.y >= wallMaskBoard.GetLength(1))
+                return false;
+
+            var result = wallMaskBoard[position.x, position.y] & (int)direction;
+            return result > 0;
         }
 
         void Move(Vector2Int to)
@@ -153,7 +169,7 @@ namespace GameG
             return position;
         }
 
-        bool IsMovePossible(Vector2Int to)
+        bool IsMovePossibleTile(Vector2Int to)
         {
             if (to.x < 0 || to.x >= board.GetLength(0) || to.y < 0 || to.y >= board.GetLength(1))
             {
