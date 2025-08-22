@@ -36,7 +36,7 @@ namespace GameG
             this.board = board.DeepCopy();
             this.startPosition = startPosition;
             this.endPosition = endPosition;
-            this.wallMaskBoard = wallMaskDic;
+            this.wallMaskBoard = wallMaskDic.DeepCopy();
 
             Reset();
         }
@@ -186,6 +186,25 @@ namespace GameG
             }
 
             return true;
+        }
+    }
+
+    public class PuzzleUtil
+    {
+        public static Direction GetDirection(Vector2Int from, Vector2Int to)
+        {
+            var vector = to - from;
+
+            if (vector == Vector2Int.up)
+                return Direction.Up;
+            else if (vector == Vector2Int.down)
+                return Direction.Down;
+            else if (vector == Vector2Int.left)
+                return Direction.Left;
+            else if (vector == Vector2Int.right)
+                return Direction.Right;
+
+            return Direction.None;
         }
     }
 }

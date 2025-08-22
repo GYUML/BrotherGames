@@ -9,9 +9,9 @@ namespace GameG
     public class FieldView : MonoBehaviour
     {
         public GameProcedures procedures;
+        public PuzzleInput input;
 
         TilePuzzle puzzle = new TilePuzzle();
-        TilePuzzle virtualPuzzle = new TilePuzzle();
 
         // GameObject setting
         public GameObject tileBlockPrefab;
@@ -30,12 +30,7 @@ namespace GameG
         // GameObject state
         int idCounter;
         Dictionary<int, GameObject> tileMaps = new Dictionary<int, GameObject>();
-        Stack<GameObject> selectBoxPool = new Stack<GameObject>();
-        List<GameObject> selectedBoxList = new List<GameObject>();
         Dictionary<int, Vector2Int> tilePositions = new Dictionary<int, Vector2Int>();
-        List<Vector2Int> moveList = new List<Vector2Int>();
-
-        bool[,] selectStateBoard;
 
         int[,] testBoard = new int[,]
         {
@@ -55,61 +50,9 @@ namespace GameG
         private void Awake()
         {
             tileBlockPrefab.gameObject.SetActive(false);
-
             puzzle.Init(testBoard, new Vector2Int(0, 0), new Vector2Int(3, 2), testWall);
-            virtualPuzzle.Init(testBoard, new Vector2Int(0, 0), new Vector2Int(3, 2), testWall);
 
             SpawnField(puzzle);
-        }
-
-        private void Update()
-        {
-            if (puzzle.IsEndGame())
-                return;
-
-            if (Input.GetMouseButton(0))
-            {
-                var touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var hit = Physics2D.Raycast(touchPosition, Vector2.zero, 10f, LayerMask.GetMask("Tile"));
-                if (hit.collider != null)
-                {
-                    if (hit.collider.CompareTag("Platform"))
-                    {
-                        var id = hit.transform.GetComponent<TileEventListner>().Id;
-                        var nowPos = puzzle.GetNowPosition();
-                        var vPos = virtualPuzzle.GetNowPosition();
-                        var pos = tilePositions[id];
-                        var dir = GetDirection(vPos, pos);
-
-                        // 현재 타일은 선택되지 않은 상태여야 한다.
-                        if (selectStateBoard[pos.x, pos.y] == false)
-                        {
-                            // 현재 캐릭터 위치이거나, 캐릭터 위치가 선택된 상태여야 한다.
-                            if (pos == nowPos)
-                            {
-                                selectStateBoard[pos.x, pos.y] = true;
-                                ShowSelectBox(hit.transform.position);
-                                moveList.Add(pos);
-                            }
-                            else if (selectStateBoard[nowPos.x, nowPos.y] == true)
-                            {
-                                if (virtualPuzzle.IsMovePossible(dir) && !virtualPuzzle.IsEndGame())
-                                {
-                                    virtualPuzzle.Move(dir);
-                                    selectStateBoard[pos.x, pos.y] = true;
-                                    ShowSelectBox(hit.transform.position);
-                                    moveList.Add(pos);
-                                    Debug.Log(virtualPuzzle.GetString());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            else if (Input.GetMouseButtonUp(0))
-            {
-                
-            }
         }
 
         public void SpawnField(TilePuzzle puzzle)
@@ -164,70 +107,49 @@ namespace GameG
             var flag = Instantiate(flagPrefab);
             flag.transform.position = tileMaps[FindTileId(puzzle.GetEndPosition())].transform.position;
 
-            selectStateBoard = new bool[board.GetLength(0), board.GetLength(1)];
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
+
+            input.SpawnField(puzzle);
         }
 
-        public void SubmitMove()
+        public void SubmitMove(List<Vector2Int> moveList)
         {
             for (int i = 0; i < moveList.Count - 1; i++)
             {
                 var from = moveList[i];
                 var to = moveList[i + 1];
-                var dir = GetDirection(from, to);
+                var dir = PuzzleUtil.GetDirection(from, to);
 
                 puzzle.Move(dir);
                 MovePlayer(from, to);
             }
-            moveList.Clear();
-            ClearSelectedBoxes();
-            selectStateBoard.SetAllFalse();
 
             if (puzzle.IsEndGame())
                 Debug.Log($"End Game. {puzzle.IsSuccessGame()}");
-        }
 
-        public void ClearSelect()
-        {
-            for (int i = 0; i < moveList.Count - 1; i++)
-                virtualPuzzle.UndoMove();
-
-            moveList.Clear();
-            ClearSelectedBoxes();
-            selectStateBoard.SetAllFalse();
+            Debug.Log(puzzle.GetNowPosition());
         }
 
         public void UndoMove()
         {
             var log = puzzle.GetPositionLog();
-            ClearSelect();
 
             if (log.Count > 0)
             {
                 var prePos = log.Peek();
                 puzzle.UndoMove();
-                virtualPuzzle.UndoMove();
                 procedures.AddProcedure(UndoMovePlayer(prePos));
             }
         }
 
-        void ShowSelectBox(Vector3 position)
+        public Vector2Int GetPlayerPosition()
         {
-            var selectedBox = selectBoxPool.Count > 0 ? selectBoxPool.Pop() : Instantiate(selectBoxPrefab);
-            selectedBox.transform.position = position;
-            selectedBox.gameObject.SetActive(true);
-            selectedBoxList.Add(selectedBox);
+            return puzzle.GetNowPosition();
         }
 
-        void ClearSelectedBoxes()
+        public Vector2Int GetTilePosition(int id)
         {
-            foreach (var selectedBox in selectedBoxList)
-            {
-                selectedBox.gameObject.SetActive(false);
-                selectBoxPool.Push(selectedBox);
-            }
-
-            selectedBoxList.Clear();
+            return tilePositions[id];
         }
 
         void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
@@ -277,22 +199,6 @@ namespace GameG
             }
 
             return -1;
-        }
-
-        Direction GetDirection(Vector2Int from, Vector2Int to)
-        {
-            var vector = to - from;
-
-            if (vector == Vector2Int.up)
-                return Direction.Up;
-            else if (vector == Vector2Int.down)
-                return Direction.Down;
-            else if (vector == Vector2Int.left)
-                return Direction.Left;
-            else if (vector == Vector2Int.right)
-                return Direction.Right;
-
-            return Direction.None;
         }
     }
 }
