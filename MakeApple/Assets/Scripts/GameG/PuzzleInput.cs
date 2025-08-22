@@ -70,7 +70,6 @@ namespace GameG
 
         public void SpawnField(TilePuzzle puzzle)
         {
-            virtualPuzzle = new TilePuzzle();
             virtualPuzzle.Init(puzzle.GetBoardState(), puzzle.GetNowPosition(), puzzle.GetEndPosition(), puzzle.GetWallMaskBoard());
             selectStateBoard = new bool[puzzle.GetBoardState().GetLength(0), puzzle.GetBoardState().GetLength(1)];
         }

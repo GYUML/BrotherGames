@@ -31,12 +31,12 @@ namespace GameG
         Vector2Int nowPosition;
         Stack<Vector2Int> positionLog = new Stack<Vector2Int>();
 
-        public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition, int[,] wallMaskDic)
+        public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition, int[,] wallMaskBoard)
         {
             this.board = board.DeepCopy();
             this.startPosition = startPosition;
             this.endPosition = endPosition;
-            this.wallMaskBoard = wallMaskDic.DeepCopy();
+            this.wallMaskBoard = wallMaskBoard.DeepCopy();
 
             Reset();
         }
