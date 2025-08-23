@@ -45,13 +45,21 @@ namespace GameG
             { 0, 0, 0 },
             { 0, 1, 2 },
         };
+        PuzzleData puzzleData;
 
         private void Awake()
         {
+            puzzleData = new PuzzleData();
+            puzzleData.board = testBoard;
+            puzzleData.wallMaskBoard = testWall;
+            puzzleData.startPosition = new Vector2Int(0, 0);
+            puzzleData.endPosition = new Vector2Int(3, 2);
+
             tileBlockPrefab.gameObject.SetActive(false);
-            puzzle.Init(testBoard, new Vector2Int(0, 0), new Vector2Int(3, 2), testWall);
+            puzzle.Init(puzzleData);
 
             SpawnField(puzzle);
+            input.SpawnField(puzzleData);
         }
 
         public void SpawnField(TilePuzzle puzzle)
@@ -105,10 +113,7 @@ namespace GameG
 
             var flag = Instantiate(flagPrefab);
             flag.transform.position = tileMaps[FindTileId(puzzle.GetEndPosition())].transform.position;
-
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
-
-            input.SpawnField(puzzle);
         }
 
         public void SubmitMove(List<Vector2Int> moveList)

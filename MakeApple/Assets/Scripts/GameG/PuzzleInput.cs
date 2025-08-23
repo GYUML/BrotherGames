@@ -76,10 +76,10 @@ namespace GameG
             }
         }
 
-        public void SpawnField(TilePuzzle puzzle)
+        public void SpawnField(PuzzleData puzzleData)
         {
-            virtualPuzzle.Init(puzzle.GetBoardState(), puzzle.GetNowPosition(), puzzle.GetEndPosition(), puzzle.GetWallMaskBoard());
-            selectStateBoard = new bool[puzzle.GetBoardState().GetLength(0), puzzle.GetBoardState().GetLength(1)];
+            virtualPuzzle.Init(puzzleData);
+            selectStateBoard = new bool[puzzleData.board.GetLength(0), puzzleData.board.GetLength(1)];
         }
 
         public void UndoMove()

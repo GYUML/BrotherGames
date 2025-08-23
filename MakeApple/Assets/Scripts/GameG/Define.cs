@@ -22,29 +22,22 @@ namespace GameG
 
     public class TilePuzzle
     {
-        int[,] board;
-        Vector2Int startPosition;
-        Vector2Int endPosition;
-        int[,] wallMaskBoard;
+        PuzzleData puzzle;
 
         int remainTileCount;
         Vector2Int nowPosition;
         Stack<Vector2Int> positionLog = new Stack<Vector2Int>();
 
-        public void Init(int[,] board, Vector2Int startPosition, Vector2Int endPosition, int[,] wallMaskBoard)
+        public void Init(PuzzleData puzzle)
         {
-            this.board = board.DeepCopy();
-            this.startPosition = startPosition;
-            this.endPosition = endPosition;
-            this.wallMaskBoard = wallMaskBoard.DeepCopy();
-
+            this.puzzle = puzzle.DeepCopy();
             Reset();
         }
 
         public void Reset()
         {
-            remainTileCount = GetRemainTileCount(board);
-            nowPosition = startPosition;
+            remainTileCount = GetRemainTileCount(puzzle.board);
+            nowPosition = puzzle.startPosition;
             positionLog.Clear();
         }
 
@@ -62,7 +55,7 @@ namespace GameG
             {
                 var pos = positionLog.Pop();
                 remainTileCount++;
-                board[pos.x, pos.y] = 1;
+                puzzle.board[pos.x, pos.y] = 1;
                 nowPosition = pos;
             }
         }
@@ -76,7 +69,7 @@ namespace GameG
         {
             bool isEndGame = false;
 
-            if (nowPosition == endPosition)
+            if (nowPosition == puzzle.endPosition)
             {
                 isEndGame = true;
             }
@@ -94,17 +87,17 @@ namespace GameG
 
         public bool IsSuccessGame()
         {
-            return remainTileCount == 1 && nowPosition == endPosition;
+            return remainTileCount == 1 && nowPosition == puzzle.endPosition;
         }
 
         public int[,] GetBoardState()
         {
-            return board;
+            return puzzle.board;
         }
 
         public int[,] GetWallMaskBoard()
         {
-            return wallMaskBoard;
+            return puzzle.wallMaskBoard;
         }
 
         public Stack<Vector2Int> GetPositionLog()
@@ -124,23 +117,23 @@ namespace GameG
 
         public bool HasWall(Vector2Int position, Direction direction)
         {
-            if (position.x < 0 || position.x >= wallMaskBoard.GetLength(0) || position.y < 0 || position.y >= wallMaskBoard.GetLength(1))
+            if (position.x < 0 || position.x >= puzzle.wallMaskBoard.GetLength(0) || position.y < 0 || position.y >= puzzle.wallMaskBoard.GetLength(1))
                 return false;
 
-            var result = wallMaskBoard[position.x, position.y] & (int)direction;
+            var result = puzzle.wallMaskBoard[position.x, position.y] & (int)direction;
             return result > 0;
         }
 
         public Vector2Int GetEndPosition()
         {
-            return endPosition;
+            return puzzle.endPosition;
         }
 
         void Move(Vector2Int to)
         {
             positionLog.Push(nowPosition);
 
-            board[nowPosition.x, nowPosition.y] = 0;
+            puzzle.board[nowPosition.x, nowPosition.y] = 0;
             remainTileCount--;
             nowPosition = to;
         }
@@ -176,11 +169,11 @@ namespace GameG
 
         bool IsMovePossibleTile(Vector2Int to)
         {
-            if (to.x < 0 || to.x >= board.GetLength(0) || to.y < 0 || to.y >= board.GetLength(1))
+            if (to.x < 0 || to.x >= puzzle.board.GetLength(0) || to.y < 0 || to.y >= puzzle.board.GetLength(1))
             {
                 return false;
             }
-            else if (board[to.x, to.y] != 1)
+            else if (puzzle.board[to.x, to.y] != 1)
             {
                 return false;
             }
@@ -210,10 +203,10 @@ namespace GameG
 
     public class PuzzleData
     {
-        int[,] board;
-        int[,] wallMaskBoard;
+        public int[,] board;
+        public int[,] wallMaskBoard;
 
-        Vector2Int startPosition;
-        Vector2Int endPosition;
+        public Vector2Int startPosition;
+        public Vector2Int endPosition;
     }
 }

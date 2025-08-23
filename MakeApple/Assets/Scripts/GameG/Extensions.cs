@@ -82,5 +82,17 @@ namespace GameG
         {
             return pos.x >= 0 && pos.x < array.GetLength(0) && pos.y >= 0 && pos.y < array.GetLength(1);
         }
+
+        public static PuzzleData DeepCopy(this PuzzleData data)
+        {
+            var copy = new PuzzleData();
+
+            copy.board = data.board.DeepCopy();
+            copy.wallMaskBoard = data.wallMaskBoard.DeepCopy();
+            copy.startPosition = data.startPosition;
+            copy.endPosition = data.endPosition;
+
+            return copy;
+        }
     }
 }
