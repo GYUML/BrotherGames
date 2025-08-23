@@ -7,6 +7,7 @@ namespace GameG
     {
         public GameObject selectBoxPrefab;
         public FieldView fieldView;
+        public DragCamera dragLayout;
 
         TilePuzzle virtualPuzzle = new TilePuzzle();
         bool[,] selectStateBoard;
@@ -20,6 +21,9 @@ namespace GameG
             if (Input.GetMouseButton(0))
             {
                 if (virtualPuzzle.IsEndGame())
+                    return;
+
+                if (dragLayout.IsDragging)
                     return;
 
                 var touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -39,6 +43,8 @@ namespace GameG
                             // 현재 캐릭터 위치이거나, 캐릭터 위치가 선택된 상태여야 한다.
                             if (pos == vPos)
                             {
+                                dragLayout.Locked = true;
+
                                 selectStateBoard[pos.x, pos.y] = true;
                                 ShowSelectBox(hit.transform.position);
                                 moveList.Add(pos);
@@ -59,6 +65,8 @@ namespace GameG
             }
             else if (Input.GetMouseButtonUp(0))
             {
+                dragLayout.Locked = false;
+
                 fieldView.SubmitMove(moveList);
                 ClearSelectedBoxes();
                 selectStateBoard.SetAllFalse();

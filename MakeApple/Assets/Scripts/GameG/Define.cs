@@ -207,4 +207,13 @@ namespace GameG
             return Direction.None;
         }
     }
+
+    public class PuzzleData
+    {
+        int[,] board;
+        int[,] wallMaskBoard;
+
+        Vector2Int startPosition;
+        Vector2Int endPosition;
+    }
 }

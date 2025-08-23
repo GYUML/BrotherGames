@@ -2657,6 +2657,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectBoxPrefab: {fileID: 1125161774}
   fieldView: {fileID: 474161838}
+  dragLayout: {fileID: 1343343546}
 --- !u!1 &506207563
 GameObject:
   m_ObjectHideFlags: 0
@@ -6279,7 +6280,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1343343543
 RectTransform:
   m_ObjectHideFlags: 0
