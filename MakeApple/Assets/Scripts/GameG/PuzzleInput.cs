@@ -72,7 +72,7 @@ namespace GameG
                 selectStateBoard.SetAllFalse();
                 moveList.Clear();
 
-                Debug.Log(virtualPuzzle.GetNowPosition());
+                Debug.Log($"{virtualPuzzle.GetNowPosition()}, {virtualPuzzle.GetAcquireRune()}");
             }
         }
 

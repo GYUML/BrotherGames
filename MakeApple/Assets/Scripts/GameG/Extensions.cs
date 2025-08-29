@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameG
@@ -17,6 +18,14 @@ namespace GameG
             }
 
             return result;
+        }
+
+        public static Dictionary<Vector2Int, int> DeepCopy(this Dictionary<Vector2Int, int> dic)
+        {
+            var copy = new Dictionary<Vector2Int, int>();
+            foreach (var item in dic)
+                copy.Add(item.Key, item.Value);
+            return copy;
         }
 
         public static string GetString(this int[,] array)
@@ -89,8 +98,10 @@ namespace GameG
 
             copy.board = data.board.DeepCopy();
             copy.wallMaskBoard = data.wallMaskBoard.DeepCopy();
+            copy.itemBoard = data.itemBoard.DeepCopy();
             copy.startPosition = data.startPosition;
             copy.endPosition = data.endPosition;
+            copy.needRune = data.needRune;
 
             return copy;
         }

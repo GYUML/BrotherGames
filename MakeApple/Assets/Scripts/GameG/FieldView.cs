@@ -45,6 +45,13 @@ namespace GameG
             { 0, 0, 0 },
             { 0, 1, 2 },
         };
+        int[,] itemBoard = new int[,]
+        {
+            { 0, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 0 },
+        };
         PuzzleData puzzleData;
 
         private void Awake()
@@ -52,8 +59,10 @@ namespace GameG
             puzzleData = new PuzzleData();
             puzzleData.board = testBoard;
             puzzleData.wallMaskBoard = testWall;
+            puzzleData.itemBoard = itemBoard;
             puzzleData.startPosition = new Vector2Int(0, 0);
             puzzleData.endPosition = new Vector2Int(3, 2);
+            puzzleData.needRune = 10;
 
             tileBlockPrefab.gameObject.SetActive(false);
             puzzle.Init(puzzleData);
@@ -169,7 +178,7 @@ namespace GameG
             var nowTile = tileMaps[nowTileId];
 
             yield return MovePlayerAniCo(nowTile.transform.position);
-            prevTile.GetComponent<TileEventListner>().DoDrop();
+            //prevTile.GetComponent<TileEventListner>().DoDrop();
         }
 
         IEnumerator MovePlayerAniCo(Vector3 position)

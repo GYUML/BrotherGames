@@ -24,9 +24,9 @@ namespace GameG
     {
         PuzzleData puzzle;
 
-        int remainTileCount;
         Vector2Int nowPosition;
         Stack<Vector2Int> positionLog = new Stack<Vector2Int>();
+        int acquiredRune;
 
         public void Init(PuzzleData puzzle)
         {
@@ -36,7 +36,6 @@ namespace GameG
 
         public void Reset()
         {
-            remainTileCount = GetRemainTileCount(puzzle.board);
             nowPosition = puzzle.startPosition;
             positionLog.Clear();
         }
@@ -51,13 +50,13 @@ namespace GameG
 
         public void UndoMove()
         {
-            if (positionLog.Count > 0)
-            {
-                var pos = positionLog.Pop();
-                remainTileCount++;
-                puzzle.board[pos.x, pos.y] = 1;
-                nowPosition = pos;
-            }
+            // TODO
+            //if (positionLog.Count > 0)
+            //{
+            //    var pos = positionLog.Pop();
+
+            //    nowPosition = pos;
+            //}
         }
 
         public bool IsMovePossible(Direction direction)
@@ -87,7 +86,7 @@ namespace GameG
 
         public bool IsSuccessGame()
         {
-            return remainTileCount == 1 && nowPosition == puzzle.endPosition;
+            return nowPosition == puzzle.endPosition && acquiredRune >= puzzle.needRune;
         }
 
         public int[,] GetBoardState()
@@ -110,9 +109,9 @@ namespace GameG
             return nowPosition;
         }
 
-        public int GetRemainCount()
+        public int GetAcquireRune()
         {
-            return remainTileCount;
+            return acquiredRune;
         }
 
         public bool HasWall(Vector2Int position, Direction direction)
@@ -133,22 +132,13 @@ namespace GameG
         {
             positionLog.Push(nowPosition);
 
-            puzzle.board[nowPosition.x, nowPosition.y] = 0;
-            remainTileCount--;
-            nowPosition = to;
-        }
-
-        int GetRemainTileCount(int[,] board)
-        {
-            var count = 0;
-
-            foreach (var tile in board)
+            if (puzzle.itemBoard[to.x, to.y] == 1)
             {
-                if (tile == 1)
-                    count++;
+                puzzle.itemBoard[to.x, to.y] = 0;
+                acquiredRune++;
             }
 
-            return count;
+            nowPosition = to;
         }
 
         Vector2Int GetNextPosition(Direction direction)
@@ -205,8 +195,11 @@ namespace GameG
     {
         public int[,] board;
         public int[,] wallMaskBoard;
+        public int[,] itemBoard;
 
         public Vector2Int startPosition;
         public Vector2Int endPosition;
+
+        public int needRune;
     }
 }

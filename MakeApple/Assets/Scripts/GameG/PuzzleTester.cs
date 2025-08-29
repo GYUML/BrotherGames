@@ -94,7 +94,7 @@ namespace GameG
                         print += board[i, j] + " ";
                 }
             }
-            print += $"{Environment.NewLine} {puzzle.GetRemainCount()}";
+            print += $"{Environment.NewLine}";
 
             if (puzzle.IsEndGame())
                 print += $"{Environment.NewLine}GameEnd. success={puzzle.IsSuccessGame()}";
