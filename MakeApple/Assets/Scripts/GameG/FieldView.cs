@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace GameG
 {
@@ -37,7 +38,7 @@ namespace GameG
         {
             { 1, 1, 1 },
             { 1, 1, 1 },
-            { 1, 1, 1 },
+            { 2, 2, 1 },
             { 1, 1, 1 },
         };
         int[,] testWall = new int[,]
@@ -156,8 +157,8 @@ namespace GameG
                 var to = moveList[i + 1];
                 var dir = PuzzleUtil.GetDirection(from, to);
 
-                puzzle.Move(dir);
                 MovePlayer(from, to);
+                puzzle.Move(dir);
             }
 
             if (puzzle.IsEndGame())
@@ -191,7 +192,11 @@ namespace GameG
         void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
         {
             procedures.AddProcedure(MovePlayerCo(prevPos, nowPos));
-            procedures.AddProcedure(AcquireItemCo(nowPos));
+            if (puzzle.GetItemType(nowPos) == 1)
+                procedures.AddProcedure(AcquireItemCo(nowPos));
+            if (puzzle.GetTileType(prevPos) == TileType.DropPlatform)
+                procedures.AddProcedure(DropTileCo(prevPos));
+
             //var prevId = FindTileId(prevPos);
             //var nowId = FindTileId(nowPos);
             //procedures.AddProcedure(MovePlayerCo(prevId, nowId));
@@ -245,6 +250,14 @@ namespace GameG
             {
                 itemMap[pos].gameObject.SetActive(false);
             }
+
+            yield break;
+        }
+
+        IEnumerator DropTileCo(Vector2Int pos)
+        {
+            var tile = tileMap[pos];
+            tile.GetComponent<TileEventListner>().DoDrop();
 
             yield break;
         }

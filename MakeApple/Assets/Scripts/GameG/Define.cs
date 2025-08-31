@@ -8,7 +8,8 @@ namespace GameG
     public enum TileType
     {
         None = 0,
-        Platform = 1
+        Platform = 1,
+        DropPlatform = 2,
     }
 
     public enum Direction
@@ -133,6 +134,21 @@ namespace GameG
             return puzzle.endPosition;
         }
 
+        public TileType GetTileType(Vector2Int position)
+        {
+            return (TileType)GetBoardState()[position.x, position.y];
+        }
+
+        public int GetItemType(Vector2Int position)
+        {
+            return puzzle.itemBoard[position.x, position.y];
+        }
+
+        void SetTileType(Vector2Int position, TileType tileType)
+        {
+            puzzle.board[position.x, position.y] = (int)tileType;
+        }
+
         void Move(Vector2Int to)
         {
             positionLog.Push(nowPosition);
@@ -141,6 +157,11 @@ namespace GameG
             {
                 puzzle.itemBoard[to.x, to.y] = 0;
                 acquiredRune++;
+            }
+
+            if (GetTileType(nowPosition) == TileType.DropPlatform)
+            {
+                SetTileType(nowPosition, TileType.None);
             }
 
             nowPosition = to;
@@ -168,12 +189,12 @@ namespace GameG
             {
                 return false;
             }
-            else if (puzzle.board[to.x, to.y] != 1)
+            else if (GetTileType(to) == TileType.Platform || GetTileType(to) == TileType.DropPlatform)
             {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 
