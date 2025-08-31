@@ -99,6 +99,11 @@ namespace GameG
             return puzzle.wallMaskBoard;
         }
 
+        public int[,] GetItemBoard()
+        {
+            return puzzle.itemBoard;
+        }
+
         public Stack<Vector2Int> GetPositionLog()
         {
             return positionLog;

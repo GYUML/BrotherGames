@@ -84,13 +84,14 @@ namespace GameG
 
         public void UndoMove()
         {
-            var log = virtualPuzzle.GetPositionLog();
+            // TODO
+            //var log = virtualPuzzle.GetPositionLog();
 
-            if (log.Count > 0)
-            {
-                virtualPuzzle.UndoMove();
-                fieldView.UndoMove();
-            }
+            //if (log.Count > 0)
+            //{
+            //    virtualPuzzle.UndoMove();
+            //    fieldView.UndoMove();
+            //}
         }
 
         void ShowSelectBox(Vector3 position)

@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace GameG
@@ -19,6 +18,7 @@ namespace GameG
         public GameObject wallHorizontalPrefab;
         public GameObject flagPrefab;
         public GameObject player;
+        public GameObject runePrefab;
 
         public Vector2 tileGap;
         public Vector2 tilePivot;
@@ -30,6 +30,8 @@ namespace GameG
         int idCounter;
         Dictionary<int, GameObject> tileMaps = new Dictionary<int, GameObject>();
         Dictionary<int, Vector2Int> tilePositions = new Dictionary<int, Vector2Int>();
+        Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
+        Dictionary<Vector2Int, GameObject> itemMap = new Dictionary<Vector2Int, GameObject>();
 
         int[,] testBoard = new int[,]
         {
@@ -87,6 +89,7 @@ namespace GameG
 
                     tileMaps.Add(idCounter, instantiated);
                     tilePositions.Add(idCounter, new Vector2Int(i, j));
+                    tileMap.Add(new Vector2Int(i, j), instantiated);
                     idCounter++;
                 }
             }
@@ -120,9 +123,29 @@ namespace GameG
                 }
             }
 
+            SpawnFieldItem();
+
             var flag = Instantiate(flagPrefab);
             flag.transform.position = tileMaps[FindTileId(puzzle.GetEndPosition())].transform.position;
             player.transform.position = tileMaps[FindTileId(puzzle.GetNowPosition())].transform.position;
+        }
+
+        void SpawnFieldItem()
+        {
+            var itemBoard = puzzle.GetItemBoard();
+
+            for (int i = 0; i < itemBoard.GetLength(0); i++)
+            {
+                for (int j = 0; j < itemBoard.GetLength(1); j++)
+                {
+                    if (itemBoard[i, j] == 1)
+                    {
+                        var rune = Instantiate(runePrefab);
+                        rune.transform.position = tileMaps[FindTileId(new Vector2Int(i, j))].transform.position;
+                        itemMap.Add(new Vector2Int(i, j), rune);
+                    }
+                }
+            }
         }
 
         public void SubmitMove(List<Vector2Int> moveList)
@@ -167,9 +190,11 @@ namespace GameG
 
         void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
         {
-            var prevId = FindTileId(prevPos);
-            var nowId = FindTileId(nowPos);
-            procedures.AddProcedure(MovePlayerCo(prevId, nowId));
+            procedures.AddProcedure(MovePlayerCo(prevPos, nowPos));
+            procedures.AddProcedure(AcquireItemCo(nowPos));
+            //var prevId = FindTileId(prevPos);
+            //var nowId = FindTileId(nowPos);
+            //procedures.AddProcedure(MovePlayerCo(prevId, nowId));
         }
 
         IEnumerator MovePlayerCo(int prevTileId, int nowTileId)
@@ -178,6 +203,17 @@ namespace GameG
             var nowTile = tileMaps[nowTileId];
 
             yield return MovePlayerAniCo(nowTile.transform.position);
+            
+            //prevTile.GetComponent<TileEventListner>().DoDrop();
+        }
+
+        IEnumerator MovePlayerCo(Vector2Int prev, Vector2Int now)
+        {
+            var prevTile = tileMap[prev];
+            var nowTile = tileMap[now];
+
+            yield return MovePlayerAniCo(nowTile.transform.position);
+
             //prevTile.GetComponent<TileEventListner>().DoDrop();
         }
 
@@ -201,6 +237,16 @@ namespace GameG
             player.transform.position = tile.transform.position;
 
             yield return null;
+        }
+
+        IEnumerator AcquireItemCo(Vector2Int pos)
+        {
+            if (itemMap.ContainsKey(pos))
+            {
+                itemMap[pos].gameObject.SetActive(false);
+            }
+
+            yield break;
         }
 
         int FindTileId(Vector2Int tilePosition)
