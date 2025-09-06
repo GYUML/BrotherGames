@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace GameG
 {
@@ -33,7 +34,7 @@ namespace GameG
         int[,] testBoard = new int[,]
         {
             { 1, 1, 1 },
-            { 1, 1, 1 },
+            { 3, 1, 1 },
             { 2, 2, 1 },
             { 1, 1, 1 },
         };
@@ -47,7 +48,7 @@ namespace GameG
         int[,] itemBoard = new int[,]
         {
             { 0, 1, 1 },
-            { 1, 1, 1 },
+            { 0, 1, 1 },
             { 1, 1, 1 },
             { 1, 1, 0 },
         };
@@ -82,6 +83,8 @@ namespace GameG
                         newTile = new NormalTile(new Vector2Int(i, j), testWall[i, j], hasRune);
                     else if (testBoard[i, j] == (int)TileEnum.Disappear)
                         newTile = new DisappearTile(new Vector2Int(i, j), testWall[i, j], hasRune);
+                    else if (testBoard[i, j] == (int)TileEnum.Portal)
+                        newTile = new PortalTile(new Vector2Int(i, j), testWall[i, j], new Vector2Int(3, 1));
                     else
                         newTile = new EmptyTile(new Vector2Int(i, j), testWall[i, j]);
 
@@ -98,6 +101,8 @@ namespace GameG
 
             events.Add(GimmickEnum.RuneItem, (pos) => procedures.AddProcedure(AcquireItemCo(pos)));
             events.Add(GimmickEnum.DisappearTile, (pos) => procedures.AddProcedure(DropTileCo(pos)));
+            events.Add(GimmickEnum.Teleport, (pos) => procedures.AddProcedure(TeleportPlayerCo(pos)));
+
             return events;
         }
 
@@ -215,6 +220,14 @@ namespace GameG
             }
 
             player.transform.position = position;
+        }
+
+        IEnumerator TeleportPlayerCo(Vector2Int pos)
+        {
+            yield return new WaitForSeconds(0.3f);
+
+            var tile = tileMap[pos];
+            player.transform.position = tile.transform.position;
         }
 
         IEnumerator AcquireItemCo(Vector2Int pos)

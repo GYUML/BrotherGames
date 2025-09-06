@@ -39,18 +39,38 @@ namespace GameG
         public override void OnLeave(BasePuzzleBoard board, BaseTile tile) { }
     }
 
+    public class TeleportGimmick : BaseGimmick
+    {
+        Vector2Int teleportPos;
+
+        public TeleportGimmick(Vector2Int teleportPos)
+        {
+            this.teleportPos = teleportPos;
+        }
+
+        public override void OnEnter(BasePuzzleBoard board, BaseTile tile)
+        {
+            board.MovePoint(teleportPos);
+            board.OnGimmickEvent(GimmickEnum.Teleport, teleportPos);
+        }
+
+        public override void OnLeave(BasePuzzleBoard board, BaseTile tile) { }
+    }
+
     public enum GimmickEnum
     {
         None,
         RuneItem,
         DisappearTile,
+        Teleport,
     }
 
     public enum TileEnum
     {
         None,
         Normal,
-        Disappear
+        Disappear,
+        Portal
     }
 
     public abstract class BaseTile
@@ -123,6 +143,20 @@ namespace GameG
     {
         public DisappearTile(Vector2Int pos, int wallMask, bool hasRune) : base(pos, wallMask, hasRune)
         {
+            gimmicks.Add(new DisappearGimmick());
+        }
+
+        public override void OnEnter(BasePuzzleBoard board) { }
+
+        public override void OnLeave(BasePuzzleBoard board) { }
+    }
+
+    public class PortalTile : BaseTile
+    {
+        public PortalTile(Vector2Int pos, int wallMask, Vector2Int teleportPos) : base(pos, wallMask)
+        {
+            IsWalkable = true;
+            gimmicks.Add(new TeleportGimmick(teleportPos));
             gimmicks.Add(new DisappearGimmick());
         }
 
