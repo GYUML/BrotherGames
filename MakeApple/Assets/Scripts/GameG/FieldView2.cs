@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,24 +61,44 @@ namespace GameG
             board = LoadBoardData();
             SpawnField(board);
             board.Initialize();
+            board.SetGimmickEvent(GetGimmickEvent());
 
             input.Initialize(LoadBoardData());
         }
 
         BasePuzzleBoard LoadBoardData()
         {
-            NormalTile[,] tiles = new NormalTile[4, 3];
+            BaseTile[,] tiles = new BaseTile[4, 3];
 
             for (int i = 0; i < testBoard.GetLength(0); i++)
             {
                 for (int j = 0; j < testBoard.GetLength(1); j++)
                 {
-                    var newTile = new NormalTile(new Vector2Int(i, j), TileEnum.Normal, testWall[i, j]);
+                    BaseTile newTile;
+                    var tileEnum = (TileEnum)testBoard[i, j];
+                    var hasRune = itemBoard[i, j] == 1;
+
+                    if (tileEnum == TileEnum.Normal)
+                        newTile = new NormalTile(new Vector2Int(i, j), testWall[i, j], hasRune);
+                    else if (testBoard[i, j] == (int)TileEnum.Disappear)
+                        newTile = new DisappearTile(new Vector2Int(i, j), testWall[i, j], hasRune);
+                    else
+                        newTile = new EmptyTile(new Vector2Int(i, j), testWall[i, j]);
+
                     tiles[i, j] = newTile;
                 }
             }
 
             return new BasePuzzleBoard(tiles, new Vector2Int(0, 0), new Vector2Int(3, 2));
+        }
+
+        Dictionary<GimmickEnum, Action<Vector2Int>> GetGimmickEvent()
+        {
+            var events = new Dictionary<GimmickEnum, Action<Vector2Int>>();
+
+            events.Add(GimmickEnum.RuneItem, (pos) => procedures.AddProcedure(AcquireItemCo(pos)));
+            events.Add(GimmickEnum.DisappearTile, (pos) => procedures.AddProcedure(DropTileCo(pos)));
+            return events;
         }
 
         public void SpawnField(BasePuzzleBoard board)
@@ -119,29 +140,28 @@ namespace GameG
                 }
             }
 
-            SpawnFieldItem();
+            SpawnFieldItem(board);
 
             var flag = Instantiate(flagPrefab);
             flag.transform.position = tileMap[board.EndPos].transform.position;
             player.transform.position = tileMap[board.PlayerPos].transform.position;
         }
 
-        void SpawnFieldItem()
+        void SpawnFieldItem(BasePuzzleBoard board)
         {
-            //var itemBoard = puzzle.GetItemBoard();
-
-            //for (int i = 0; i < itemBoard.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < itemBoard.GetLength(1); j++)
-            //    {
-            //        if (itemBoard[i, j] == 1)
-            //        {
-            //            var rune = Instantiate(runePrefab);
-            //            rune.transform.position = tileMaps[FindTileId(new Vector2Int(i, j))].transform.position;
-            //            itemMap.Add(new Vector2Int(i, j), rune);
-            //        }
-            //    }
-            //}
+            for (int i = 0; i < board.GetLength(0); i++)
+            {
+                for (int j = 0; j < board.GetLength(1); j++)
+                {
+                    if (itemBoard[i, j] == 1)
+                    {
+                        var pos = new Vector2Int(i, j);
+                        var rune = Instantiate(runePrefab);
+                        rune.transform.position = tileMap[pos].transform.position;
+                        itemMap.Add(pos, rune);
+                    }
+                }
+            }
         }
 
         public void SubmitMove(List<Vector2Int> moveList)

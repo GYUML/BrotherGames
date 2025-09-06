@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameG
@@ -20,14 +19,31 @@ namespace GameG
 
     public class DisappearGimmick : BaseGimmick
     {
-        public override void OnEnter(BasePuzzleBoard board, BaseTile tile)
-        {
-        }
+        public override void OnEnter(BasePuzzleBoard board, BaseTile tile) { }
 
         public override void OnLeave(BasePuzzleBoard board, BaseTile tile)
         {
             tile.IsWalkable = false;
+            board.OnGimmickEvent(GimmickEnum.DisappearTile, tile.Pos);
         }
+    }
+
+    public class RuneItemGimmick : BaseGimmick
+    {
+        public override void OnEnter(BasePuzzleBoard board, BaseTile tile)
+        {
+            board.AcquireRune++;
+            board.OnGimmickEvent(GimmickEnum.RuneItem, tile.Pos);
+        }
+
+        public override void OnLeave(BasePuzzleBoard board, BaseTile tile) { }
+    }
+
+    public enum GimmickEnum
+    {
+        None,
+        RuneItem,
+        DisappearTile,
     }
 
     public enum TileEnum
@@ -42,18 +58,15 @@ namespace GameG
         public bool IsWalkable { get; set; }
         public Vector2Int Pos { get; protected set; }
 
-        protected TileEnum tileType;
         protected List<IGimmick> gimmicks = new List<IGimmick>();
         protected int wallMask;
 
         public abstract void OnEnter(BasePuzzleBoard board);
         public abstract void OnLeave(BasePuzzleBoard board);
 
-        public BaseTile(Vector2Int pos, TileEnum tileType, int wallMask)
+        public BaseTile(Vector2Int pos, int wallMask)
         {
             Pos = pos;
-
-            this.tileType = tileType;
             this.wallMask = wallMask;
         }
 
@@ -63,7 +76,6 @@ namespace GameG
                 gimmick.OnEnter(board, this);
 
             OnEnter(board);
-            board.OnTileEnterEvent(tileType, Pos);
         }
 
         public void Leave(BasePuzzleBoard board)
@@ -72,7 +84,6 @@ namespace GameG
                 gimmick.OnLeave(board, this);
 
             OnLeave(board);
-            board.OnTileLeaveEvent(tileType, Pos);
         }
 
         public bool HasWall(Direction direction)
@@ -83,9 +94,12 @@ namespace GameG
 
     public class NormalTile : BaseTile
     {
-        public NormalTile(Vector2Int pos, TileEnum tileType, int wallMask) : base(pos, tileType, wallMask)
+        public NormalTile(Vector2Int pos, int wallMask, bool hasRune) : base(pos, wallMask)
         {
             IsWalkable = true;
+
+            if (hasRune)
+                gimmicks.Add(new RuneItemGimmick());
         }
 
         public override void OnEnter(BasePuzzleBoard board) { }
@@ -95,7 +109,7 @@ namespace GameG
 
     public class EmptyTile : BaseTile
     {
-        public EmptyTile(Vector2Int pos, TileEnum tileType, int wallMask) : base(pos, tileType, wallMask)
+        public EmptyTile(Vector2Int pos, int wallMask) : base(pos, wallMask)
         {
             IsWalkable = false;
         }
@@ -105,11 +119,10 @@ namespace GameG
         public override void OnLeave(BasePuzzleBoard board) { }
     }
 
-    public class DisappearTile : BaseTile
+    public class DisappearTile : NormalTile
     {
-        public DisappearTile(Vector2Int pos, TileEnum tileType, int wallMask) : base(pos, tileType, wallMask)
+        public DisappearTile(Vector2Int pos, int wallMask, bool hasRune) : base(pos, wallMask, hasRune)
         {
-            IsWalkable = true;
             gimmicks.Add(new DisappearGimmick());
         }
 
@@ -123,11 +136,11 @@ namespace GameG
         public Vector2Int StartPos { get; private set; }
         public Vector2Int EndPos { get; private set; }
         public Vector2Int PlayerPos { get; private set; }
+        public int AcquireRune { get; set; }
 
         BaseTile[,] board;
 
-        Dictionary<TileEnum, Action<Vector2Int>> tileEnterEvent;
-        Dictionary<TileEnum, Action<Vector2Int>> tileLeaveEvent;
+        Dictionary<GimmickEnum, Action<Vector2Int>> gimmickEvent;
 
         public BasePuzzleBoard(BaseTile[,] board, Vector2Int startPos, Vector2Int endPos)
         {
@@ -244,26 +257,15 @@ namespace GameG
             return Direction.None;
         }
 
-        public void SetTileEnterEvent(Dictionary<TileEnum, Action<Vector2Int>> enterEvent)
+        public void SetGimmickEvent(Dictionary<GimmickEnum, Action<Vector2Int>> gimmickEvent)
         {
-            tileEnterEvent = enterEvent;
+            this.gimmickEvent = gimmickEvent;
         }
 
-        public void SetTileLeaveEvent(Dictionary<TileEnum, Action<Vector2Int>> leaveEvent)
+        public void OnGimmickEvent(GimmickEnum gimmick, Vector2Int pos)
         {
-            tileLeaveEvent = leaveEvent;
-        }
-
-        public void OnTileEnterEvent(TileEnum tileType, Vector2Int pos)
-        {
-            if (tileEnterEvent != null && tileEnterEvent.ContainsKey(tileType))
-                tileEnterEvent[tileType]?.Invoke(pos);
-        }
-
-        public void OnTileLeaveEvent(TileEnum tileType, Vector2Int pos)
-        {
-            if (tileLeaveEvent != null && tileLeaveEvent.ContainsKey(tileType))
-                tileLeaveEvent[tileType]?.Invoke(pos);
+            if (gimmickEvent != null && gimmickEvent.ContainsKey(gimmick))
+                gimmickEvent[gimmick]?.Invoke(pos);
         }
     }
 }
