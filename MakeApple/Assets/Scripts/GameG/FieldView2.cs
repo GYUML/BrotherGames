@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace GameG
 {
@@ -59,47 +58,93 @@ namespace GameG
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
-            board = LoadBoardData();
+            var boardData = CreateBoardData();
+            board = GetPuzzleBoard(boardData);
+
             SpawnField(board);
             board.Initialize();
             board.SetGimmickEvent(GetGimmickEvent());
 
-            input.Initialize(LoadBoardData());
+            input.Initialize(GetPuzzleBoard(boardData));
         }
 
-        BasePuzzleBoard LoadBoardData()
+        BoardData CreateBoardData()
         {
-            BaseTile[,] tiles = new BaseTile[4, 3];
+            var sizeX = 4;
+            var sizeY = 3;
 
-            for (int i = 0; i < testBoard.GetLength(0); i++)
+            var boardData = new BoardData();
+
+            BoardDataMaker.CreateBoard(boardData, sizeX, sizeY);
+            BoardDataMaker.SetStartPos(boardData, 0, 0);
+            BoardDataMaker.SetEndPos(boardData, 3, 2);
+
+            for (int i = 0; i < sizeX; i++)
             {
-                for (int j = 0; j < testBoard.GetLength(1); j++)
+                for (int j = 0; j < sizeY; j++)
                 {
+                    BoardDataMaker.SetTile(boardData, i, j, TileEnum.Normal);
+                }
+            }
+
+            BoardDataMaker.SetTile(boardData, 2, 0, TileEnum.Disappear);
+            BoardDataMaker.SetTile(boardData, 2, 1, TileEnum.Disappear);
+
+            BoardDataMaker.AddTileWall(boardData, 0, 1, Direction.Right);
+            BoardDataMaker.AddTileWall(boardData, 1, 1, Direction.Left);
+
+            BoardDataMaker.SetItem(boardData, 0, 1, 1);
+            BoardDataMaker.SetItem(boardData, 0, 2, 1);
+            BoardDataMaker.SetItem(boardData, 1, 1, 1);
+            BoardDataMaker.SetItem(boardData, 1, 2, 1);
+            BoardDataMaker.SetItem(boardData, 2, 1, 1);
+            BoardDataMaker.SetItem(boardData, 2, 2, 1);
+            BoardDataMaker.SetItem(boardData, 3, 0, 1);
+            BoardDataMaker.SetItem(boardData, 3, 1, 1);
+
+            return boardData;
+        }
+
+        BasePuzzleBoard GetPuzzleBoard(BoardData boardData)
+        {
+            if (boardData == null)
+                return null;
+
+            var tiles = new BaseTile[boardData.GetLength(0), boardData.GetLength(1)];
+
+            for (int i = 0; i < boardData.GetLength(0); i++)
+            {
+                for (int j = 0; j < boardData.GetLength(1); j++)
+                {
+                    var tileData = boardData.GetTileData(i, j);
+
                     BaseTile newTile;
-                    var tileEnum = (TileEnum)testBoard[i, j];
-                    var hasRune = itemBoard[i, j] == 1;
+                    var tileEnum = tileData.tileEnum;
+                    var itemCode = tileData.item;
+                    var wallMask = tileData.wallMask;
+                    var pos = new Vector2Int(i, j);
 
                     if (tileEnum == TileEnum.Normal)
-                        newTile = new NormalTile(new Vector2Int(i, j), testWall[i, j], hasRune);
-                    else if (testBoard[i, j] == (int)TileEnum.Disappear)
-                        newTile = new DisappearTile(new Vector2Int(i, j), testWall[i, j], hasRune);
-                    else if (testBoard[i, j] == (int)TileEnum.Portal)
-                        newTile = new PortalTile(new Vector2Int(i, j), testWall[i, j], new Vector2Int(3, 1));
+                        newTile = new NormalTile(pos, wallMask, itemCode);
+                    else if (tileEnum == TileEnum.Disappear)
+                        newTile = new DisappearTile(pos, wallMask, itemCode);
+                    else if (tileEnum == TileEnum.Portal)
+                        newTile = new PortalTile(pos, wallMask, new Vector2Int(3, 1), itemCode);
                     else
-                        newTile = new EmptyTile(new Vector2Int(i, j), testWall[i, j]);
+                        newTile = new EmptyTile(pos, wallMask);
 
                     tiles[i, j] = newTile;
                 }
             }
 
-            return new BasePuzzleBoard(tiles, new Vector2Int(0, 0), new Vector2Int(3, 2));
+            return new BasePuzzleBoard(tiles, boardData.startPos, boardData.endPos);
         }
 
         Dictionary<GimmickEnum, Action<Vector2Int>> GetGimmickEvent()
         {
             var events = new Dictionary<GimmickEnum, Action<Vector2Int>>();
 
-            events.Add(GimmickEnum.RuneItem, (pos) => procedures.AddProcedure(AcquireItemCo(pos)));
+            events.Add(GimmickEnum.AcquireItem, (pos) => procedures.AddProcedure(AcquireItemCo(pos)));
             events.Add(GimmickEnum.DisappearTile, (pos) => procedures.AddProcedure(DropTileCo(pos)));
             events.Add(GimmickEnum.Teleport, (pos) => procedures.AddProcedure(TeleportPlayerCo(pos)));
 
@@ -158,7 +203,7 @@ namespace GameG
             {
                 for (int j = 0; j < board.GetLength(1); j++)
                 {
-                    if (itemBoard[i, j] == 1)
+                    if (board.HasItem(new Vector2Int(i, j)))
                     {
                         var pos = new Vector2Int(i, j);
                         var rune = Instantiate(runePrefab);

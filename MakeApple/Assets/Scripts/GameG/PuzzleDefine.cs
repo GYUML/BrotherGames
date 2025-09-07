@@ -28,12 +28,12 @@ namespace GameG
         }
     }
 
-    public class RuneItemGimmick : BaseGimmick
+    public class AcquireItemGimmick : BaseGimmick
     {
         public override void OnEnter(BasePuzzleBoard board, BaseTile tile)
         {
             board.AcquireRune++;
-            board.OnGimmickEvent(GimmickEnum.RuneItem, tile.Pos);
+            board.OnGimmickEvent(GimmickEnum.AcquireItem, tile.Pos);
         }
 
         public override void OnLeave(BasePuzzleBoard board, BaseTile tile) { }
@@ -60,7 +60,7 @@ namespace GameG
     public enum GimmickEnum
     {
         None,
-        RuneItem,
+        AcquireItem,
         DisappearTile,
         Teleport,
     }
@@ -77,17 +77,22 @@ namespace GameG
     {
         public bool IsWalkable { get; set; }
         public Vector2Int Pos { get; protected set; }
+        public int Item;
 
         protected List<IGimmick> gimmicks = new List<IGimmick>();
         protected int wallMask;
-
+        
         public abstract void OnEnter(BasePuzzleBoard board);
         public abstract void OnLeave(BasePuzzleBoard board);
 
-        public BaseTile(Vector2Int pos, int wallMask)
+        public BaseTile(Vector2Int pos, int wallMask, int item = 0)
         {
             Pos = pos;
             this.wallMask = wallMask;
+            Item = item;
+
+            if (item != 0)
+                gimmicks.Add(new AcquireItemGimmick());
         }
 
         public void Enter(BasePuzzleBoard board)
@@ -114,12 +119,9 @@ namespace GameG
 
     public class NormalTile : BaseTile
     {
-        public NormalTile(Vector2Int pos, int wallMask, bool hasRune) : base(pos, wallMask)
+        public NormalTile(Vector2Int pos, int wallMask, int item) : base(pos, wallMask, item)
         {
             IsWalkable = true;
-
-            if (hasRune)
-                gimmicks.Add(new RuneItemGimmick());
         }
 
         public override void OnEnter(BasePuzzleBoard board) { }
@@ -141,7 +143,7 @@ namespace GameG
 
     public class DisappearTile : NormalTile
     {
-        public DisappearTile(Vector2Int pos, int wallMask, bool hasRune) : base(pos, wallMask, hasRune)
+        public DisappearTile(Vector2Int pos, int wallMask, int item) : base(pos, wallMask, item)
         {
             gimmicks.Add(new DisappearGimmick());
         }
@@ -153,7 +155,7 @@ namespace GameG
 
     public class PortalTile : BaseTile
     {
-        public PortalTile(Vector2Int pos, int wallMask, Vector2Int teleportPos) : base(pos, wallMask)
+        public PortalTile(Vector2Int pos, int wallMask, Vector2Int teleportPos, int item) : base(pos, wallMask, item)
         {
             IsWalkable = true;
             gimmicks.Add(new TeleportGimmick(teleportPos));
@@ -291,6 +293,11 @@ namespace GameG
             return Direction.None;
         }
 
+        public bool HasItem(Vector2Int pos)
+        {
+            return board[pos.x, pos.y].Item != 0;
+        }
+
         public void SetGimmickEvent(Dictionary<GimmickEnum, Action<Vector2Int>> gimmickEvent)
         {
             this.gimmickEvent = gimmickEvent;
@@ -300,6 +307,103 @@ namespace GameG
         {
             if (gimmickEvent != null && gimmickEvent.ContainsKey(gimmick))
                 gimmickEvent[gimmick]?.Invoke(pos);
+        }
+    }
+
+    public class TileData
+    {
+        public TileEnum tileEnum;
+        public int wallMask;
+        public int item;
+
+        public TileData(TileEnum tileEnum, int wallMask, int item)
+        {
+            this.tileEnum = tileEnum;
+            this.wallMask = wallMask;
+            this.item = item;
+        }
+    }
+
+    public class BoardData
+    {
+        public int code;
+        public TileData[,] tiles;
+        public Vector2Int startPos;
+        public Vector2Int endPos;
+
+        public void Initialize(int sizeX, int sizeY)
+        {
+            tiles = new TileData[sizeX, sizeY];
+            for (int i = 0; i < tiles.GetLength(0); i++)
+            {
+                for (int j = 0; j < tiles.GetLength(1); j++)
+                {
+                    tiles[i, j] = new TileData(TileEnum.None, 0, 0);
+                }
+            }
+        }
+
+        public int GetLength(int dimension)
+        {
+            if (tiles == null)
+                return 0;
+
+            return tiles.GetLength(dimension);
+        }
+
+        public TileData GetTileData(int x, int y)
+        {
+            if (tiles == null)
+                return null;
+
+            return tiles[x, y];
+        }
+    }
+
+    public class BoardDataMaker
+    {
+        public static void CreateBoard(BoardData boardData, int sizeX, int sizeY)
+        {
+            boardData.tiles = new TileData[sizeX, sizeY];
+
+            for (int i = 0; i < sizeX; i++)
+            {
+                for (int j = 0; j < sizeY; j++)
+                {
+                    boardData.tiles[i, j] = new TileData(TileEnum.None, 0, 0);
+                }
+            }
+        }
+
+        public static void SetStartPos(BoardData boardData, int x, int y)
+        {
+            boardData.startPos = new Vector2Int(x, y);
+        }
+
+        public static void SetEndPos(BoardData boardData, int x, int y)
+        {
+            boardData.endPos = new Vector2Int(x, y);
+        }
+
+        public static void SetTile(BoardData boardData, int x, int y, TileEnum tileEnum)
+        {
+            boardData.tiles[x, y].tileEnum = tileEnum;
+        }
+
+        public static void AddTileWall(BoardData boardData, int x, int y, Direction dir)
+        {
+            boardData.tiles[x, y].wallMask |= (int)dir;
+        }
+
+        public static void RemoveTileWall(BoardData boardData, int x, int y, Direction dir)
+        {
+            var reverseDir = ~dir;
+            boardData.tiles[x, y].wallMask &= (int)reverseDir;
+        }
+
+        public static void SetItem(BoardData boardData, int x, int y, int itemCode)
+        {
+            boardData.tiles[x, y].item = itemCode;
         }
     }
 }

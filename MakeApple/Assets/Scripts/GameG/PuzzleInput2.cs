@@ -49,7 +49,7 @@ namespace GameG
                                 ShowSelectBox(hit.transform.position);
                                 moveList.Add(pos);
                             }
-                            else if (selectStateBoard[vPos.x, vPos.y] == true)
+                            else if (selectStateBoard[vPos.x, vPos.y] == true && dir != Direction.None)
                             {
                                 if (board.IsMovePossible(dir) && !board.IsEndGame())
                                 {
