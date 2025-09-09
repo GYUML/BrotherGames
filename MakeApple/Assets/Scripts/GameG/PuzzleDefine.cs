@@ -322,6 +322,11 @@ namespace GameG
             this.wallMask = wallMask;
             this.item = item;
         }
+
+        public bool HasWall(Direction direction)
+        {
+            return (wallMask & (int)direction) > 0;
+        }
     }
 
     public class BoardData
@@ -331,7 +336,7 @@ namespace GameG
         public Vector2Int startPos;
         public Vector2Int endPos;
 
-        public void Initialize(int sizeX, int sizeY)
+        public BoardData(int sizeX, int sizeY)
         {
             tiles = new TileData[sizeX, sizeY];
             for (int i = 0; i < tiles.GetLength(0); i++)

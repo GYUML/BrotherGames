@@ -73,7 +73,7 @@ namespace GameG
             var sizeX = 4;
             var sizeY = 3;
 
-            var boardData = new BoardData();
+            var boardData = new BoardData(sizeX, sizeY);
 
             BoardDataMaker.CreateBoard(boardData, sizeX, sizeY);
             BoardDataMaker.SetStartPos(boardData, 0, 0);

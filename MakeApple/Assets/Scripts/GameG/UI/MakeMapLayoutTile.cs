@@ -1,25 +1,21 @@
 using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MakeMapLayoutTile : MonoBehaviour
 {
     public KButton centerButton;
+    public TMP_Text centerText;
 
-    public KButton upButton;
-    public KButton downButton;
-    public KButton leftButton;
-    public KButton rightButton;
-
-    int center;
-    int up;
-    int down;
-    int left;
-    int right;
-
-    Action<int, int, int, int, int> onUpdate;
-
-    private void Start()
+    public void SetText(string text)
     {
-        
+        centerText.text = text;
+    }
+
+    public void SetClickEvent(UnityAction action)
+    {
+        centerButton.onClick.RemoveAllListeners();
+        centerButton.onClick.AddListener(action);
     }
 }
