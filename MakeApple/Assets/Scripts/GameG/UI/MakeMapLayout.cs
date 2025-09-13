@@ -1,6 +1,7 @@
 using GameG;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,8 @@ namespace GameG
 {
     public class MakeMapLayout : MonoBehaviour
     {
+        public static string BoardFolder = "Assets/Resources/GameG/BoardData";
+
         public int SizeX = 5;
         public int SizeY = 4;
 
@@ -22,10 +25,21 @@ namespace GameG
         public TMP_Dropdown editModeDropdown;
         public TMP_Dropdown tileTypeDropdown;
 
+        public List<GameObject> editTabs;
+
+        // Config
+        public TMP_InputField startXInput;
+        public TMP_InputField startYInput;
+        public TMP_InputField endXInput;
+        public TMP_InputField endYInput;
+        public KButton configApplyButton;
+
+        // WallMask
         public Toggle wallMaskUp;
         public Toggle wallMaskDown;
         public Toggle wallMaskLeft;
         public Toggle wallMaskRight;
+        public KButton applayButton;
 
         Stack<MakeMapLayoutTile> tilePool = new Stack<MakeMapLayoutTile>();
         MakeMapLayoutTile[,] tileBoard;
@@ -35,7 +49,8 @@ namespace GameG
 
         enum EditMode
         {
-            None,
+            ManageMap,
+            Config,
             TileType,
             WallMask
         }
@@ -44,23 +59,56 @@ namespace GameG
         {
             tilePrefab.gameObject.SetActive(false);
 
+            // 데이터 관리
             createButton.onClick.AddListener(() => CreateMap(SizeX, SizeY));
-        }
+            saveButton.onClick.AddListener(SaveMap);
+            loadButton.onClick.AddListener(LoadMap);
 
-        private void OnEnable()
-        {
             // Edit Mode 드롭다운
             var editModes = Enum.GetNames(typeof(EditMode));
             editModeDropdown.AddOptions(editModes.ToList());
+            editModeDropdown.onValueChanged.AddListener(ChangeTab);
+
+            // 설정
+            configApplyButton.onClick.AddListener(EditConfig);
 
             // 타일 종류 드롭다운
             var tileTypes = Enum.GetNames(typeof(TileEnum));
             tileTypeDropdown.AddOptions(tileTypes.ToList());
+
+            // 벽
+            applayButton.onClick.AddListener(EditWallMask);
+
+            ChangeTab(0);
         }
 
         void CreateMap(int sizeX, int sizeY)
         {
             boardData = new BoardData(sizeX, sizeY);
+            CreateTileView();
+            UpdateTileView();
+        }
+
+        void CreateTileView()
+        {
+            // Clear
+            if (tileBoard != null)
+            {
+                for (int i = 0; i < tileBoard.GetLength(0); i++)
+                {
+                    for (int j = 0; j < tileBoard.GetLength(1); j++)
+                    {
+                        var tile = tileBoard[i, j];
+                        tile.gameObject.SetActive(false);
+                        tilePool.Push(tile);
+                    }
+                }
+            }
+            
+            // Create New
+            var sizeX = boardData.GetLength(0);
+            var sizeY = boardData.GetLength(1);
+
             tileBoard = new MakeMapLayoutTile[sizeX, sizeY];
             layoutGroup.constraintCount = sizeX;
 
@@ -72,11 +120,52 @@ namespace GameG
                     var pos = new Vector2Int(i, j);
 
                     tile.gameObject.SetActive(true);
-                    //tile.GetComponent<RectTransform>().anchoredPosition = new Vector2(120f + j * 110f, -120f + -i * 110f);
                     tile.SetClickEvent(() => OnSelectTile(pos.x, pos.y));
 
                     tileBoard[pos.x, pos.y] = tile;
                 }
+            }
+        }
+
+        void UpdateTileView()
+        {
+            var sizeX = boardData.GetLength(0);
+            var sizeY = boardData.GetLength(1);
+
+            for (int i = 0; i < sizeX; i++)
+            {
+                for (int j = 0; j < sizeY; j++)
+                {
+                    var pos = new Vector2Int(i, j);
+                    var tileData = boardData.GetTileData(pos.x, pos.y);
+                    var tileView = tileBoard[pos.x, pos.y];
+
+                    tileView.SetText(((int)tileData.tileEnum).ToString());
+                    tileView.SetWallMaskText(tileData.wallMask);
+                }
+            }
+        }
+
+        void SaveMap()
+        {
+            JsonTool.Save(boardData, BoardFolder, "0.json");
+        }
+
+        void LoadMap()
+        {
+            if (JsonTool.TryLoad<BoardData>(BoardFolder, "0.json", out var output))
+            {
+                boardData = output;
+                CreateTileView();
+                UpdateTileView();
+            }
+        }
+
+        void ChangeTab(int editMode)
+        {
+            for (int i = 0; i < Enum.GetNames(typeof(EditMode)).Length; i++)
+            {
+                editTabs[i].SetActive(i == editMode);
             }
         }
 
@@ -94,7 +183,8 @@ namespace GameG
         {
             var tileEnum = tileTypeDropdown.value;
             boardData.GetTileData(x, y).tileEnum = (TileEnum)tileEnum;
-            tileBoard[x, y].SetText(tileEnum.ToString());
+            //tileBoard[x, y].SetText(tileEnum.ToString());
+            UpdateTileView();
         }
 
         void OnSelectWallMask(int x, int y)
@@ -103,6 +193,17 @@ namespace GameG
             wallMaskDown.isOn = boardData.GetTileData(x, y).HasWall(Direction.Down);
             wallMaskLeft.isOn = boardData.GetTileData(x, y).HasWall(Direction.Left);
             wallMaskRight.isOn = boardData.GetTileData(x, y).HasWall(Direction.Right);
+        }
+
+        void EditConfig()
+        {
+            int.TryParse(startXInput.text, out var startX);
+            int.TryParse(startYInput.text, out var startY);
+            int.TryParse(endXInput.text, out var endX);
+            int.TryParse(endYInput.text, out var endY);
+
+            BoardDataMaker.SetStartPos(boardData, startX, startY);
+            BoardDataMaker.SetEndPos(boardData, endX, endY);
         }
 
         void EditWallMask()
@@ -126,6 +227,9 @@ namespace GameG
                 BoardDataMaker.AddTileWall(boardData, nowSelectedTile.x, nowSelectedTile.y, Direction.Right);
             else
                 BoardDataMaker.RemoveTileWall(boardData, nowSelectedTile.x, nowSelectedTile.y, Direction.Right);
+
+            //tileBoard[nowSelectedTile.x, nowSelectedTile.y].SetWallMaskText(boardData.GetTileData(nowSelectedTile.x, nowSelectedTile.y).wallMask);
+            UpdateTileView();
         }
     }
 }
