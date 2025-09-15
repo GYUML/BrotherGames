@@ -27,6 +27,9 @@ namespace GameG
 
         public List<GameObject> editTabs;
 
+        // ManageMap
+        public TMP_InputField mapNameInput;
+
         // Config
         public TMP_InputField startXInput;
         public TMP_InputField startYInput;
@@ -148,17 +151,29 @@ namespace GameG
 
         void SaveMap()
         {
-            JsonTool.Save(boardData, BoardFolder, "0.json");
+            if (mapNameInput.text != "")
+                JsonTool.Save(boardData, BoardFolder, $"{mapNameInput.text}.json");
+            else
+                Debug.LogError($"Not valid file name. {mapNameInput.text}");
         }
 
         void LoadMap()
         {
-            if (JsonTool.TryLoad<BoardData>(BoardFolder, "0.json", out var output))
+            if (mapNameInput.text != "")
             {
-                boardData = output;
-                CreateTileView();
-                UpdateTileView();
+                if (JsonTool.TryLoad<BoardData>(BoardFolder, $"{mapNameInput.text}.json", out var output))
+                {
+                    boardData = output;
+                    CreateTileView();
+                    UpdateTileView();
+                }
+                else
+                {
+                    Debug.LogError($"Failed to load the file. {mapNameInput.text}");
+                }
             }
+            else
+                Debug.LogError($"Not valid file name. {mapNameInput.text}");
         }
 
         void ChangeTab(int editMode)
