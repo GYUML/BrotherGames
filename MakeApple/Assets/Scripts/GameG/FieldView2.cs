@@ -22,6 +22,8 @@ namespace GameG
         public GameObject player;
         public GameObject runePrefab;
 
+        public GameObject clearStageEffect;
+
         public Vector2 tileGap;
         public Vector2 tilePivot;
 
@@ -33,38 +35,23 @@ namespace GameG
         Dictionary<Vector2Int, GameObject> tileMap = new Dictionary<Vector2Int, GameObject>();
         Dictionary<Vector2Int, GameObject> itemMap = new Dictionary<Vector2Int, GameObject>();
 
-        int[,] testBoard = new int[,]
-        {
-            { 1, 1, 1 },
-            { 3, 1, 1 },
-            { 2, 2, 1 },
-            { 1, 1, 1 },
-        };
-        int[,] testWall = new int[,]
-        {
-            { 0, 8, 0 },
-            { 0, 4, 0 },
-            { 0, 0, 0 },
-            { 0, 1, 2 },
-        };
-        int[,] itemBoard = new int[,]
-        {
-            { 0, 1, 1 },
-            { 0, 1, 1 },
-            { 1, 1, 1 },
-            { 1, 1, 0 },
-        };
+        List<GameObject> etcMap = new List<GameObject>();
 
         BasePuzzleBoard board;
+
+        int nowStage;
 
         private void Awake()
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
-            //var boardData = CreateBoardData();
-            var mapName = 1;
+            nowStage = 0;
+            procedures.AddProcedure(NextStageCo());
+        }
 
-            if (JsonTool.TryLoad<BoardData>(BoardFolder, $"{mapName}.json", out var boardData))
+        void LoadMap(int mapCode)
+        {
+            if (JsonTool.TryLoad<BoardData>(BoardFolder, $"{mapCode}.json", out var boardData))
             {
                 board = GetPuzzleBoard(boardData);
 
@@ -74,43 +61,6 @@ namespace GameG
 
                 input.Initialize(GetPuzzleBoard(boardData));
             }
-        }
-
-        BoardData CreateBoardData()
-        {
-            var sizeX = 4;
-            var sizeY = 3;
-
-            var boardData = new BoardData(sizeX, sizeY);
-
-            BoardDataMaker.CreateBoard(boardData, sizeX, sizeY);
-            BoardDataMaker.SetStartPos(boardData, 0, 0);
-            BoardDataMaker.SetEndPos(boardData, 3, 2);
-
-            for (int i = 0; i < sizeX; i++)
-            {
-                for (int j = 0; j < sizeY; j++)
-                {
-                    BoardDataMaker.SetTile(boardData, i, j, TileEnum.Normal);
-                }
-            }
-
-            BoardDataMaker.SetTile(boardData, 2, 0, TileEnum.Disappear);
-            BoardDataMaker.SetTile(boardData, 2, 1, TileEnum.Disappear);
-
-            BoardDataMaker.AddTileWall(boardData, 0, 1, Direction.Right);
-            BoardDataMaker.AddTileWall(boardData, 1, 1, Direction.Left);
-
-            BoardDataMaker.SetItem(boardData, 0, 1, 1);
-            BoardDataMaker.SetItem(boardData, 0, 2, 1);
-            BoardDataMaker.SetItem(boardData, 1, 1, 1);
-            BoardDataMaker.SetItem(boardData, 1, 2, 1);
-            BoardDataMaker.SetItem(boardData, 2, 1, 1);
-            BoardDataMaker.SetItem(boardData, 2, 2, 1);
-            BoardDataMaker.SetItem(boardData, 3, 0, 1);
-            BoardDataMaker.SetItem(boardData, 3, 1, 1);
-
-            return boardData;
         }
 
         BasePuzzleBoard GetPuzzleBoard(BoardData boardData)
@@ -159,6 +109,24 @@ namespace GameG
             return events;
         }
 
+        public void ClearField()
+        {
+            clearStageEffect.SetActive(false);
+
+            foreach (var item in tileMap)
+                Destroy(item.Value);
+
+            foreach (var item in itemMap)
+                Destroy(item.Value);
+
+            foreach (var item in etcMap)
+                Destroy(item);
+
+            tileMap.Clear();
+            itemMap.Clear();
+            etcMap.Clear();
+        }
+
         public void SpawnField(BasePuzzleBoard board)
         {
             // Spawn Tile
@@ -203,12 +171,16 @@ namespace GameG
                         var wallPos = Vector3.Lerp(tileMap[pos].transform.position, tileMap[pos + Vector2Int.up].transform.position, 0.5f);
                         var wall = Instantiate(wallVerticalPrefab);
                         wall.transform.position = wallPos;
+
+                        etcMap.Add(wall);
                     }
                     if (board.IsValidPosition(pos + Vector2Int.right) && board.HasWall(pos, Direction.Right) && board.HasWall(pos + Vector2Int.right, Direction.Left))
                     {
                         var wallPos = Vector3.Lerp(tileMap[pos].transform.position, tileMap[pos + Vector2Int.right].transform.position, 0.5f);
                         var wall = Instantiate(wallHorizontalPrefab);
                         wall.transform.position = wallPos;
+
+                        etcMap.Add(wall);
                     }
                 }
             }
@@ -218,6 +190,8 @@ namespace GameG
             var flag = Instantiate(flagPrefab);
             flag.transform.position = tileMap[board.EndPos].transform.position;
             player.transform.position = tileMap[board.PlayerPos].transform.position;
+
+            etcMap.Add(flag);
         }
 
         void SpawnFieldItem(BasePuzzleBoard board)
@@ -250,7 +224,11 @@ namespace GameG
             }
 
             if (board.IsEndGame())
+            {
                 Debug.Log($"End Game. {board.IsSuccessGame()}");
+                procedures.AddProcedure(ClearStageCo());
+                procedures.AddProcedure(NextStageCo());
+            }
 
             Debug.Log(board.PlayerPos);
         }
@@ -263,10 +241,6 @@ namespace GameG
         void MovePlayer(Vector2Int prevPos, Vector2Int nowPos)
         {
             procedures.AddProcedure(MovePlayerCo(prevPos, nowPos));
-            //if (puzzle.GetItemType(nowPos) == 1)
-            //    procedures.AddProcedure(AcquireItemCo(nowPos));
-            //if (puzzle.GetTileType(prevPos) == TileType.DropPlatform)
-            //    procedures.AddProcedure(DropTileCo(prevPos));
         }
 
         IEnumerator MovePlayerCo(Vector2Int prev, Vector2Int now)
@@ -275,8 +249,6 @@ namespace GameG
             var nowTile = tileMap[now];
 
             yield return MovePlayerAniCo(nowTile.transform.position);
-
-            //prevTile.GetComponent<TileEventListner>().DoDrop();
         }
 
         IEnumerator MovePlayerAniCo(Vector3 position)
@@ -314,6 +286,23 @@ namespace GameG
             tile.GetComponent<TileEventListner>().DoDrop();
 
             yield break;
+        }
+
+        IEnumerator ClearStageCo()
+        {
+            clearStageEffect.gameObject.SetActive(true);
+
+            yield return new WaitForSeconds(5f);
+        }
+
+        IEnumerator NextStageCo()
+        {
+            ClearField();
+
+            yield return new WaitForSeconds(1f);
+
+            nowStage++;
+            LoadMap(nowStage);
         }
 
         public Vector2Int GetTilePosition(int id)
