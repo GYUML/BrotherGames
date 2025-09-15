@@ -75,6 +75,7 @@ namespace GameG
 
     public abstract class BaseTile
     {
+        public abstract TileEnum TileType { get; }
         public bool IsWalkable { get; set; }
         public Vector2Int Pos { get; protected set; }
         public int Item;
@@ -119,6 +120,7 @@ namespace GameG
 
     public class NormalTile : BaseTile
     {
+        public override TileEnum TileType => TileEnum.Normal;
         public NormalTile(Vector2Int pos, int wallMask, int item) : base(pos, wallMask, item)
         {
             IsWalkable = true;
@@ -131,6 +133,8 @@ namespace GameG
 
     public class EmptyTile : BaseTile
     {
+        public override TileEnum TileType => TileEnum.None;
+
         public EmptyTile(Vector2Int pos, int wallMask) : base(pos, wallMask)
         {
             IsWalkable = false;
@@ -143,6 +147,8 @@ namespace GameG
 
     public class DisappearTile : NormalTile
     {
+        public override TileEnum TileType => TileEnum.Disappear;
+
         public DisappearTile(Vector2Int pos, int wallMask, int item) : base(pos, wallMask, item)
         {
             gimmicks.Add(new DisappearGimmick());
@@ -155,6 +161,8 @@ namespace GameG
 
     public class PortalTile : BaseTile
     {
+        public override TileEnum TileType => TileEnum.Portal;
+
         public PortalTile(Vector2Int pos, int wallMask, Vector2Int teleportPos, int item) : base(pos, wallMask, item)
         {
             IsWalkable = true;
@@ -307,6 +315,14 @@ namespace GameG
         {
             if (gimmickEvent != null && gimmickEvent.ContainsKey(gimmick))
                 gimmickEvent[gimmick]?.Invoke(pos);
+        }
+
+        public TileEnum GetTileType(Vector2Int pos)
+        {
+            if (IsValidPosition(pos))
+                return board[pos.x, pos.y].TileType;
+            else
+                return TileEnum.None;
         }
     }
 
