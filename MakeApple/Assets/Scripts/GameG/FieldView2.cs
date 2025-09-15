@@ -7,10 +7,13 @@ namespace GameG
 {
     public class FieldView2 : MonoBehaviour
     {
+        public static string BoardFolder = "Assets/Resources/GameG/BoardData";
+
         public GameProcedures procedures;
         public PuzzleInput2 input;
 
         // GameObject setting
+        public GameObject tileEmptyPrefab;
         public GameObject tileBlockPrefab;
         public GameObject selectBoxPrefab;
         public GameObject wallVerticalPrefab;
@@ -58,14 +61,19 @@ namespace GameG
         {
             tileBlockPrefab.gameObject.SetActive(false);
 
-            var boardData = CreateBoardData();
-            board = GetPuzzleBoard(boardData);
+            //var boardData = CreateBoardData();
+            var mapName = 1;
 
-            SpawnField(board);
-            board.Initialize();
-            board.SetGimmickEvent(GetGimmickEvent());
+            if (JsonTool.TryLoad<BoardData>(BoardFolder, $"{mapName}.json", out var boardData))
+            {
+                board = GetPuzzleBoard(boardData);
 
-            input.Initialize(GetPuzzleBoard(boardData));
+                SpawnField(board);
+                board.Initialize();
+                board.SetGimmickEvent(GetGimmickEvent());
+
+                input.Initialize(GetPuzzleBoard(boardData));
+            }
         }
 
         BoardData CreateBoardData()
@@ -158,13 +166,28 @@ namespace GameG
             {
                 for (int j = 0; j < board.GetLength(1); j++)
                 {
-                    var instantiated = Instantiate(tileBlockPrefab, tileBlockPrefab.transform.parent);
-                    instantiated.transform.position = new Vector2(j * tileGap.x, -i * tileGap.y) + tilePivot;
-                    instantiated.gameObject.SetActive(true);
-                    instantiated.GetComponent<TileEventListner>().Id = idCounter;
+                    var pos = new Vector2Int(i, j);
 
-                    tileMap.Add(new Vector2Int(i, j), instantiated);
-                    idCounter++;
+                    if (board.GetTileType(pos) == TileEnum.None)
+                    {
+                        var instantiated = Instantiate(tileEmptyPrefab, tileEmptyPrefab.transform.parent);
+                        instantiated.transform.position = new Vector2(j * tileGap.x, -i * tileGap.y) + tilePivot;
+                        instantiated.gameObject.SetActive(true);
+                        instantiated.GetComponent<TileEventListner>().Id = idCounter;
+
+                        tileMap.Add(pos, instantiated);
+                        idCounter++;
+                    }
+                    else
+                    {
+                        var instantiated = Instantiate(tileBlockPrefab, tileBlockPrefab.transform.parent);
+                        instantiated.transform.position = new Vector2(j * tileGap.x, -i * tileGap.y) + tilePivot;
+                        instantiated.gameObject.SetActive(true);
+                        instantiated.GetComponent<TileEventListner>().Id = idCounter;
+
+                        tileMap.Add(pos, instantiated);
+                        idCounter++;
+                    }
                 }
             }
 

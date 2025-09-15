@@ -23,7 +23,7 @@ public class TileEventListner : MonoBehaviour
     private void OnEnable()
     {
         boxCollider = GetComponent<BoxCollider2D>();
-        boxCollider.enabled = true;   
+        boxCollider.enabled = true;
     }
 
     public void DoDrop()
