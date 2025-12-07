@@ -1,0 +1,127 @@
+{
+  "code": 0,
+  "tiles": [
+    [
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 8,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      }
+    ],
+    [
+      {
+        "tileEnum": 0,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 0,
+        "wallMask": 4,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      }
+    ],
+    [
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 0,
+        "wallMask": 0,
+        "item": 0
+      }
+    ],
+    [
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 0,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 1,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 2,
+        "item": 0
+      }
+    ],
+    [
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      },
+      {
+        "tileEnum": 1,
+        "wallMask": 0,
+        "item": 0
+      }
+    ]
+  ],
+  "startPos": {
+    "x": 0,
+    "y": 0,
+    "magnitude": 0.0,
+    "sqrMagnitude": 0
+  },
+  "endPos": {
+    "x": 4,
+    "y": 3,
+    "magnitude": 5.0,
+    "sqrMagnitude": 25
+  }
+}

@@ -107,6 +107,7 @@ public class GameProcedures : MonoBehaviour
 
         yield return fieldSpawner.RollDiceCo(dice0, dice1);
         gameLayout.ShowDiceScreen(false);
+        gameLayout.UpdateDiceText(diceSum);
 
         for (int i = 0; i < diceSum; i++)
         {
@@ -130,6 +131,8 @@ public class GameProcedures : MonoBehaviour
                 yield return fieldSpawner.MoveFigureCo(nowPosition, nowPosition + 1);
                 nowPosition++;
             }
+
+            gameLayout.UpdateDiceText(diceSum - i - 1);
         }
 
         gameLayout.SetChargeButtonEnable(true);

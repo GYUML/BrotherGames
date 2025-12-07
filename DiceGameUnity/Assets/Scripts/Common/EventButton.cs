@@ -1,11 +1,33 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class EventButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
+    public Image image;
+
     Action<PointerEventData> onPointerDownEvent;
     Action<PointerEventData> onPointerUpEvent;
+
+    public bool Enable
+    {
+        get { return enable; }
+        set 
+        { 
+            enable = value;
+            var color = image.color;
+            color.a = enable ? 1f : 0.5f;
+            image.color = color;
+        }
+    }
+
+    bool enable;
+
+    private void Start()
+    {
+        Enable = true;
+    }
 
     public void SetPointerDownEvent(Action<PointerEventData> onEvent)
     {
@@ -19,11 +41,13 @@ public class EventButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        onPointerDownEvent?.Invoke(eventData);
+        if (enable)
+            onPointerDownEvent?.Invoke(eventData);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        onPointerUpEvent?.Invoke(eventData);
+        if (enable)
+            onPointerUpEvent?.Invoke(eventData);
     }
 }

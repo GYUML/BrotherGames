@@ -154,7 +154,7 @@ public class FieldSpawner : MonoBehaviour
 
         yield return new WaitForSeconds(0.4f);
 
-        effectManager.ShowEffect(3, targetPosition);
+        effectManager.ShowEffect(3, targetPosition + new Vector3(0f, 1f, 0f));
 
         if (isDead)
         {
